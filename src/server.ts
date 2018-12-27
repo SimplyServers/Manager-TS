@@ -1,4 +1,4 @@
-import {ConfigsController} from "./manager/controllers/configs/configs";
+import {ConfigsController} from "./manager/controllers/configs/configManager";
 import {Logger} from './util/logger';
 
 class SSManager{
