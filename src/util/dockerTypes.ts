@@ -1,3 +1,3 @@
 export enum DockerTypes {
-    Java,
+    Java = "Java",
 }

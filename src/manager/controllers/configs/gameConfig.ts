@@ -12,8 +12,11 @@ interface IGame {
     stopConsoleCommand: string,
     dockerType: DockerTypes,
     logging: {
-        useLogFile: boolean,
-        path: string
+        logFile: {
+            useLogFile: boolean,
+            path: string
+        }
+        useStdout: boolean,
     },
     verify: any
 }
