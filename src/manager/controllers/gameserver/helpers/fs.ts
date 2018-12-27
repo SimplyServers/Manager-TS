@@ -62,7 +62,7 @@ class FilesystemHelper extends Helper {
         await fs.ensureFile(filePath);
         await fs.chown(filePath, userid.uid(this.server.id), userid.gid(this.server.id));
     };
-    
+
     public truncateFile = async (partialPath: string) => {
         const filePath = this.extendPath(partialPath);
 
