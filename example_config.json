@@ -1,0 +1,15 @@
+{
+  "servers": {
+    "pingTime": 30000,
+    "maxPort": 25570,
+    "minPort": 25565
+  },
+  "api": {
+    "addr": "127.0.0.1",
+    "port": 6969,
+    "secret": "Change me or else!"
+  },
+  "socket": {
+    "maxFileSize": 10
+  }
+}

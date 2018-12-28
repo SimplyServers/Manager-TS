@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import {SSManager} from "../server";
+import {SSManager} from "../ssmanager";
 
 export const dirToJson = async (dataFolder: string) => {
     //Get all files in a directory

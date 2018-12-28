@@ -8,7 +8,7 @@ import {IGame} from "../configs/gameConfig";
 
 import * as fs from "fs-extra";
 import * as path from 'path';
-import {SSManager} from "../../../server";
+import {SSManager} from "../../../ssmanager";
 import {ServerActionError} from "../../../util/errors/serverActionError";
 import * as proc from "child_process";
 import * as util from "util";
@@ -228,6 +228,7 @@ class Gameserver extends EventEmitter {
 
 
     public updateStatus = (status: Status) => {
+        SSManager.logger.verbose("Server " + this.id + " status updated to " + status);
         this.status = status;
     };
 

@@ -5,7 +5,7 @@ import * as Dockerode from 'dockerode';
 import {Status} from "../../../../util/status";
 import * as Tail from "tail";
 import * as userid from "userid";
-import {SSManager} from "../../../../server";
+import {SSManager} from "../../../../ssmanager";
 import {ServerActionError} from "../../../../util/errors/serverActionError";
 import {DockerTypes} from "../../../../util/dockerTypes";
 

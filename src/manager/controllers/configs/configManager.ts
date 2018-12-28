@@ -1,6 +1,6 @@
 import * as SSUtil from "../../../util/util";
 import * as path from 'path';
-import {SSManager} from "../../../server";
+import {SSManager} from "../../../ssmanager";
 import {IGame} from "./gameConfig";
 import {IPlugin} from "./pluginConfig";
 

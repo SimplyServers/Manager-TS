@@ -1,3 +1,3 @@
-import {SSManager} from "./src/server";
+import {SSManager} from "./src/ssmanager";
 
 const Manager = new SSManager();

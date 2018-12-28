@@ -1,7 +1,8 @@
 import * as SSUtil from "../../../util/util";
 import * as path from "path";
-import {SSManager} from "../../../server";
+import {SSManager} from "../../../ssmanager";
 import {Gameserver} from "./gameserver";
+import {IServer} from "../configs/serverConfig";
 
 class GameserverController{
     public servers: Array<Gameserver>;
@@ -14,13 +15,22 @@ class GameserverController{
 
     public loadServers = async () => {
         this.servers = await SSUtil.dirToJson(path.join(SSManager.getRoot(), this.dataFolder, "/servers/"));
-    }
+    };
 
-    public getNiceConfigs(): any{
+    public getNiceConfigs = () => {
+        let niceConfigs = [];
+        this.servers.map(server => {
+            niceConfigs.push(server.getInfo());
+        });
+        return niceConfigs;
+    };
 
-    }
-
-    public addNewServer(jsonData): void{
-
+    public addNewServer = async (jsonData: IServer) => {
+        const newServer = new Gameserver(jsonData);
+        this.servers.push(newServer);
+        await newServer.updateConfig();
+        return newServer;
     }
 }
+
+export { GameserverController }

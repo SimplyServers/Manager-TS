@@ -2,13 +2,21 @@ import {ConfigsController} from "./manager/controllers/configs/configManager";
 import {Logger} from './util/logger';
 import {Gameserver} from "./manager/controllers/gameserver/gameserver";
 import {DockerTypes} from "./util/dockerTypes";
+import {IConfig} from "./util/config";
+
+import * as configData from "../config.json";
+import {GameserverController} from "./manager/controllers/gameserver/gameserverManager";
 
 class SSManager {
+    static config: IConfig;
     static logger: Logger;
+
     private configsController;
+    private serverController;
 
     constructor() {
         SSManager.logger = new Logger(false);
+        SSManager.config = configData;
 
         SSManager.logger.info("Starting bootstrap...");
         this.bootstrap().then(() => {
@@ -26,6 +34,15 @@ class SSManager {
         SSManager.logger.info("Loading plugins...");
         await this.configsController.loadPlugins();
 
+        //Bootstrap servers
+        this.serverController = new GameserverController("../storage/");
+        SSManager.logger.info("Loading servers...");
+        await this.serverController.loadServers();
+
+        //Load API
+
+
+        //TODO: remove when done plz
         const debugServer = new Gameserver({
             id: "testing",
             game: {
