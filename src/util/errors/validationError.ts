@@ -1,4 +1,4 @@
-export class FileReadError extends Error{
+export class ValidationError extends Error{
 
     private readonly field: string;
 
