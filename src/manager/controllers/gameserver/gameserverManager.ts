@@ -11,10 +11,15 @@ class GameserverController{
 
     constructor(dataFolder: string) {
         this.dataFolder = dataFolder;
+
+        this.servers = [];
     }
 
     public loadServers = async () => {
-        this.servers = await SSUtil.dirToJson(path.join(SSManager.getRoot(), this.dataFolder, "/servers/"));
+        const serversJSON = await SSUtil.dirToJson(path.join(SSManager.getRoot(), this.dataFolder, "/servers/"));
+        serversJSON.map(server => {
+            this.servers.push(new Gameserver(server));
+        })
     };
 
     public getNiceConfigs = () => {

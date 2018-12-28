@@ -8,6 +8,7 @@ import {ServerMiddleware} from "./middleware/server";
 import {GamesController} from "./controllers/games";
 import {NodeController} from "./controllers/node";
 import {PluginsController} from "./controllers/plugins";
+import {ServersController} from "./controllers/gameserver";
 
 class APIServer {
     public express;
@@ -112,15 +113,20 @@ class APIServer {
 
         //games.ts
         const gamesController = new GamesController();
-        apiRouter.get('/games/', [this.authMiddleware.authRequired], gamesController.getGames);
+        apiRouter.get('/game/', [this.authMiddleware.authRequired], gamesController.getGames);
 
         //plugins.ts
         const pluginsController = new PluginsController();
-        apiRouter.get('/plugins/', [this.authMiddleware.authRequired], pluginsController.getPlugins);
+        apiRouter.get('/plugin/', [this.authMiddleware.authRequired], pluginsController.getPlugins);
 
         //node.ts
         const nodeController = new NodeController();
-        apiRouter.get('/node', [this.authMiddleware.authRequired], nodeController.getStatus);
+        apiRouter.get('/node/', [this.authMiddleware.authRequired], nodeController.getStatus);
+
+        //gameserver.ts
+        const gameserverController = new ServersController();
+        apiRouter.get('/server/', [this.authMiddleware.authRequired], gameserverController.getGameservers);
+        apiRouter.get('/server/:server', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.getServer);
 
         this.express.use('', apiRouter);
     };

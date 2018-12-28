@@ -7,7 +7,6 @@ import * as Tail from "tail";
 import * as userid from "userid";
 import {SSManager} from "../../../../ssmanager";
 import {ServerActionError} from "../../../../util/errors/serverActionError";
-import {DockerTypes} from "../../../../util/dockerTypes";
 
 class DockerHelper extends Helper {
 
@@ -45,7 +44,7 @@ class DockerHelper extends Helper {
     public create = async () => {
         let image;
         switch (this.server.currentGame.dockerType) {
-            case DockerTypes.Java:
+            case "Java":
                 image = 'ssjava';
                 break;
             default:

@@ -1,5 +1,3 @@
-import {DockerTypes} from "../../../util/dockerTypes";
-
 interface IGame {
     name: string,
     gamedig: {
@@ -10,7 +8,7 @@ interface IGame {
     update: any,
     startCommand: string,
     stopConsoleCommand: string,
-    dockerType: DockerTypes,
+    dockerType: string, //This should be an enum but I don't want to break stuff when it comes to backwards compatibility.
     logging: {
         logFile: {
             useLogFile: boolean,

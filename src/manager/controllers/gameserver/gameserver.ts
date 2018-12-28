@@ -1,4 +1,3 @@
-
 import {Status} from "../../../util/status";
 import {DockerHelper} from "./helpers/docker";
 import {SocketHelper} from "./helpers/socket";
@@ -83,6 +82,27 @@ class Gameserver extends EventEmitter {
         };
     };
 
+    public reloadConfig = async (conf: IServer) => {
+        if (this.isBlocked)
+            throw new ServerActionError("Server is locked. It may be installing or updating.");
+
+        if (this.status !== Status.Off)
+            throw new ServerActionError("Server is not off.");
+
+        this.setBlocked(true);
+
+        this.currentGame = conf.game;
+        this.players = conf.players;
+        this.build = conf.build;
+        this.port = conf.port;
+
+        await this.updateConfig();
+        await this.dockerHelper.rebuild();
+        await this.runUpdateScripts(false);
+
+        this.setBlocked(false);
+    };
+
     public updateConfig = async () => {
         await fs.outputJson(path.join(SSManager.getRoot(), "../storage/servers/", this.id + ".json"), this.exportConfig());
     };
@@ -104,18 +124,30 @@ class Gameserver extends EventEmitter {
         });
     };
 
-    private runUpdateScripts = async () => {
-        this.setBlocked(true);
+    private runUpdateScripts = async (updateBlock: boolean = true) => {
+        if (this.isBlocked)
+            throw new ServerActionError("Server is locked. It may be installing or updating.");
+
+        if(updateBlock)
+            this.setBlocked(true);
         const updateCommands = this.currentGame.update;
         await this.executeShellStack(updateCommands);
-        this.setBlocked(false);
+
+        if(updateBlock)
+            this.setBlocked(false);
     };
 
-    private runInstallScripts = async () => {
-        this.setBlocked(true);
+    private runInstallScripts = async (updateBlock: boolean = true) => {
+        if (this.isBlocked)
+            throw new ServerActionError("Server is locked. It may be installing or updating.");
+
+        if(updateBlock)
+            this.setBlocked(true);
         const installCommands = this.currentGame.install;
         await this.executeShellStack(installCommands);
-        this.setBlocked(false);
+
+        if(updateBlock)
+            this.setBlocked(false);
     };
 
     public start = async () => {
@@ -163,10 +195,11 @@ class Gameserver extends EventEmitter {
     public removePlugin = async (plugin: string) => {
         if (this.isBlocked)
             throw new ServerActionError("Server is locked. It may be installing or updating.");
+
         this.setBlocked(true);
 
         const pluginData = this.installedPlugins.find(installedData => installedData.name === plugin);
-        if(pluginData === undefined)
+        if (pluginData === undefined)
             throw new ServerActionError("Plugin not installed.");
 
         await this.executeShellStack(pluginData.remove);
@@ -177,7 +210,7 @@ class Gameserver extends EventEmitter {
     };
 
     public changePassword = async (password: string) => {
-
+        //'"' + cmd.replace(/(["\s'$`\\])/g, '\\$1') + '"'
     };
 
     public remove = async () => {
@@ -189,18 +222,18 @@ class Gameserver extends EventEmitter {
     };
 
     public stop = async () => {
-        if(this.status !== Status.Running)
+        if (this.status !== Status.Running)
             throw new ServerActionError("Server is not running.");
         this.dockerHelper.writeToProcess(this.currentGame.stopConsoleCommand);
         this.updateStatus(Status.Stopping);
     };
 
-    public install = async() => {
-        if(this.isBlocked)
+    public install = async () => {
+        if (this.isBlocked)
             throw new ServerActionError("Server is locked. It may be installing or updating.");
-        if(this.isInstalled)
+        if (this.isInstalled)
             throw new ServerActionError("Reinstall the server instead of installing.");
-        if(this.status !== Status.Off)
+        if (this.status !== Status.Off)
             throw new ServerActionError("Server is not off.");
 
         this.setBlocked(true);

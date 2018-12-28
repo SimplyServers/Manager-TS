@@ -1,7 +1,6 @@
 import {ConfigsController} from "./manager/controllers/configs/configManager";
 import {Logger} from './util/logger';
 import {Gameserver} from "./manager/controllers/gameserver/gameserver";
-import {DockerTypes} from "./util/dockerTypes";
 import {IConfig} from "./util/config";
 
 import * as configData from "../config.json";
@@ -87,7 +86,7 @@ class SSManager {
                 ],
                 startCommand: "java -jar -Xms{memory}M -Xmx{memory}M server.jar -port {port} -s {players}",
                 stopConsoleCommand: "stop",
-                dockerType: DockerTypes.Java,
+                dockerType: "Java",
                 logging: {
                     logFile: {
                         useLogFile: true,
