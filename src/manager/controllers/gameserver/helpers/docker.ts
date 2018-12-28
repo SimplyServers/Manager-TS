@@ -120,7 +120,7 @@ class DockerHelper extends Helper {
             'HostPort': this.server.port.toString(),
         }];
 
-        await this.dockerContoller.create(newContainer);
+        await this.dockerContoller.createContainer(newContainer);
     };
 
     /*
@@ -173,6 +173,8 @@ class DockerHelper extends Helper {
         startCmd = startCmd.replace(new RegExp('{port}', 'g'), String(this.server.port)); //Server port
         startCmd = startCmd.replace(new RegExp('{players}', 'g'), String(this.server.players)); //Server port
 
+        SSManager.logger.verbose("start command: " + startCmd)
+
         //Docker start commands
         const dockerOptions = {
             'AttachStdin': true,
@@ -183,15 +185,11 @@ class DockerHelper extends Helper {
             'StdinOnce': false,
             Cmd: ['/bin/bash', '-c', startCmd],
         };
-        //Execute start command
-        let execdProcess = await this.container.exec(dockerOptions);
-
-        this.processStdinStream = await execdProcess.start({
-            stream: true,
-            stdin: true,
-            stdout: true,
-            stderr: true
-        }).output;
+        //Execute commands on container
+        let exec = await this.container.exec(dockerOptions);
+        //Get the stream created by the process
+        this.processStdinStream = (await exec.start({stream: true, stdin: true, stdout: true, stderr: true})).output;
+        this.processStdinStream.setEncoding("utf8");
 
         await this.initContainerShell();
         await this.initFileLog();
@@ -203,7 +201,7 @@ class DockerHelper extends Helper {
 
     public killContainer = async () => {
         //TODO: cant find any docs on alternatives or why this is deprecated.
-        this.container.stop();
+        await this.container.stop();
     };
 
     /*

@@ -1,0 +1,20 @@
+{
+  "game":"example",
+  "name": "Example Plugin",
+  "install": [
+    {
+      "type": "shellCommand",
+      "command": "wget -P plugins/ https://hub.spigotmc.org/jenkins/job/spigot-essentials/lastSuccessfulBuild/artifact/Essentials/target/Essentials-2.x-SNAPSHOT.jar"
+    }
+  ],
+  "remove": [
+    {
+      "type":"shellCommand",
+      "command":"rm plugins/Essentials-2.x-SNAPSHOT.jar"
+    },
+    {
+      "type":"shellCommand",
+      "command":"rm -rf plugins/Essentials"
+    }
+  ]
+}

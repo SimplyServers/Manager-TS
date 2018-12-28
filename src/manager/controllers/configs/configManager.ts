@@ -2,6 +2,7 @@ import * as SSUtil from "../../../util/util";
 import * as path from 'path';
 import {SSManager} from "../../../server";
 import {IGame} from "./gameConfig";
+import {IPlugin} from "./pluginConfig";
 
 class ConfigsController {
     public games: Array<IGame>;

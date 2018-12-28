@@ -4,3 +4,5 @@ interface IPlugin {
     install: any,
     remove: any
 }
+
+export {IPlugin}

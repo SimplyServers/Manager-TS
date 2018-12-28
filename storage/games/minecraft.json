@@ -1,0 +1,49 @@
+{
+  "asd": "asd",
+  "name": "spigot_1.13",
+  "gamedig": {
+    "active": true,
+    "id": "minecraft"
+  },
+  "install": [
+    {
+      "type": "shellCommand",
+      "command": "wget https://cdn.getbukkit.org/spigot/spigot-1.13.1.jar"
+    },
+    {
+      "type": "shellCommand",
+      "command": "mv spigot-1.13.1.jar server.jar"
+    },
+    {
+      "type": "shellCommand",
+      "command": "echo 'eula=true' > eula.txt"
+    }
+  ],
+  "update": [
+    {
+      "type": "shellCommand",
+      "command": "rm server.jar"
+    },
+    {
+      "type": "shellCommand",
+      "command": "wget https://cdn.getbukkit.org/spigot/spigot-1.13.1.jar"
+    },
+    {
+      "type": "shellCommand",
+      "command": "mv spigot-1.13.1.jar server.jar"
+    }
+  ],
+  "startCommand": "java -jar -Xms{memory}M -Xmx{memory}M server.jar -port {port} -s {players}",
+  "stopConsoleCommand": "stop",
+  "dockertype": "java",
+  "logging": {
+    "useLogFile": true,
+    "path": "logs/latest.log"
+  },
+  "verify": [
+    {
+      "path": "server.jar",
+      "sha1": "71c8491dad1f5c5d94104f50383f7265d70f974a"
+    }
+  ]
+}
