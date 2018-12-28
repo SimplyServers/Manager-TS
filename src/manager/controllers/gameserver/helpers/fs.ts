@@ -1,11 +1,11 @@
 import {Helper} from "./helper";
 import {Gameserver} from "../gameserver";
-import {FileReadError} from "../../../../util/errors/validationError";
 
 import * as path from 'path';
 import * as querystring from "querystring";
 import * as fs from "fs-extra";
 import * as userid from "userid";
+import {FileError} from "../../../../util/errors/fileError";
 
 class FilesystemHelper extends Helper {
     constructor(server: Gameserver) {
@@ -18,7 +18,7 @@ class FilesystemHelper extends Helper {
     public getDir = async (partialPath: string) => {
         const filePath = this.extendPath(partialPath);
         if (this.checkIfIdentity(filePath))
-            throw new FileReadError(partialPath);
+            throw new FileError(partialPath);
 
         const fileList = await fs.readdir(filePath);
 
@@ -40,15 +40,15 @@ class FilesystemHelper extends Helper {
     public getFileContents = async (partialPath: string) => {
         const filePath = this.extendPath(partialPath);
         if (this.checkIfIdentity(filePath))
-            throw new FileReadError(partialPath);
+            throw new FileError(partialPath);
 
         const ext = path.extname(filePath);
         if (ext !== ".txt" && ext !== ".properties" && ext !== ".nbt" && ext !== ".yaml" && ext !== ".json")
-            throw new FileReadError(partialPath);
+            throw new FileError(partialPath);
 
         const stat = await fs.stat(filePath);
         if (!stat.isFile() || stat.size > 40000)
-            throw new FileReadError(partialPath);
+            throw new FileError(partialPath);
 
         return await fs.readFile(filePath, "utf8");
     };
@@ -57,7 +57,7 @@ class FilesystemHelper extends Helper {
         const filePath = this.extendPath(partialPath);
 
         if (this.checkIfIdentity(filePath))
-            throw new FileReadError(partialPath);
+            throw new FileError(partialPath);
 
         await fs.ensureFile(filePath);
         await fs.chown(filePath, userid.uid(this.server.id), userid.gid(this.server.id));
@@ -67,7 +67,7 @@ class FilesystemHelper extends Helper {
         const filePath = this.extendPath(partialPath);
 
         if (this.checkIfIdentity(filePath))
-            throw new FileReadError(partialPath);
+            throw new FileError(partialPath);
 
         await fs.truncate(filePath, 0);
         await fs.chown(filePath, userid.uid(this.server.id), userid.gid(this.server.id));
@@ -77,7 +77,7 @@ class FilesystemHelper extends Helper {
         const filePath = this.extendPath(partialPath);
 
         if (this.checkIfIdentity(filePath))
-            throw new FileReadError(partialPath);
+            throw new FileError(partialPath);
 
         await fs.outputFile(filePath, contents);
         await fs.chown(filePath, userid.uid(this.server.id), userid.gid(this.server.id));
@@ -87,7 +87,7 @@ class FilesystemHelper extends Helper {
         const filePath = this.extendPath(partialPath);
 
         if (this.checkIfIdentity(filePath))
-            throw new FileReadError(partialPath);
+            throw new FileError(partialPath);
 
         await fs.unlink(filePath);
     };

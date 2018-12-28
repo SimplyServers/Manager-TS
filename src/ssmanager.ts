@@ -6,6 +6,7 @@ import {IConfig} from "./util/config";
 
 import * as configData from "../config.json";
 import {GameserverController} from "./manager/controllers/gameserver/gameserverManager";
+import {APIServer} from "./api/server";
 
 class SSManager {
     static config: IConfig;
@@ -13,14 +14,17 @@ class SSManager {
 
     private configsController;
     private serverController;
+    private APIServer;
 
     constructor() {
         SSManager.logger = new Logger(false);
         SSManager.config = configData;
 
+        SSManager.logger.info("▆▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃█  Simply Servers Manager  █▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▆");
         SSManager.logger.info("Starting bootstrap...");
         this.bootstrap().then(() => {
             SSManager.logger.info("Bootstrap finished.");
+            SSManager.logger.info("▆▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▆");
         }).catch((err) => {
             SSManager.logger.error("Failed to bootstrap; " + err)
         })
@@ -40,7 +44,9 @@ class SSManager {
         await this.serverController.loadServers();
 
         //Load API
-
+        this.APIServer = new APIServer(this.configsController, this.serverController);
+        SSManager.logger.info("Loading API...");
+        this.APIServer.bootstrapExpress();
 
         //TODO: remove when done plz
         const debugServer = new Gameserver({
@@ -108,16 +114,16 @@ class SSManager {
             players: 5
         });
 
-        try {
-            //SSManager.logger.verbose("Create");
-            //await debugServer.create("testing123");
-            SSManager.logger.verbose("Install");
-            await debugServer.install();
-            SSManager.logger.verbose("Start");
-            await debugServer.start();
-        }catch (e) {
-            console.log(e);
-        }
+        // try {
+        //     //SSManager.logger.verbose("Create");
+        //     //await debugServer.create("testing123");
+        //     SSManager.logger.verbose("Install");
+        //     await debugServer.install();
+        //     SSManager.logger.verbose("Start");
+        //     await debugServer.start();
+        // }catch (e) {
+        //     console.log(e);
+        // }
     };
 
     static getRoot(): string {

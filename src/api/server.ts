@@ -1,24 +1,36 @@
 import * as express from 'express'
+
 import {SSManager} from "../ssmanager";
 import {ConfigsController} from "../manager/controllers/configs/configManager";
 import {GameserverController} from "../manager/controllers/gameserver/gameserverManager";
+import {AuthMiddleware} from "./middleware/auth";
+import {ServerMiddleware} from "./middleware/server";
+import {GamesController} from "./controllers/games";
+import {NodeController} from "./controllers/node";
+import {PluginsController} from "./controllers/plugins";
 
 class APIServer {
     public express;
-    public https;
+    public http;
     static io;
 
     private readonly configsController;
     private readonly serverController;
+
+    private readonly authMiddleware;
+    private readonly serverMiddleware;
 
     constructor(configsController: ConfigsController, serverController: GameserverController) {
         this.express = express();
 
         this.configsController = configsController;
         this.serverController = serverController;
+
+        this.authMiddleware = new AuthMiddleware();
+        this.serverMiddleware = new ServerMiddleware();
     }
 
-    private bootstrapExpress = (): void => {
+    public bootstrapExpress = (): void => {
         //Pass controllers to the app for safe keeping (access via req.locals.configsController for ex.)
         this.express.locals.configsController = this.configsController;
         this.express.locals.serverController = this.serverController;
@@ -85,9 +97,33 @@ class APIServer {
                 });
             }
         });
+
+        this.mountRoutes();
+        this.createHttp();
+    };
+
+    private createHttp = (): void => {
+        SSManager.logger.verbose("HTTP server hosted on :" + SSManager.config.api.port);
+        this.http = this.express.listen(SSManager.config.api.port);
     };
 
     private mountRoutes = (): void => {
+        const apiRouter = require('express').Router();
 
+        //games.ts
+        const gamesController = new GamesController();
+        apiRouter.get('/games/', [this.authMiddleware.authRequired], gamesController.getGames);
+
+        //plugins.ts
+        const pluginsController = new PluginsController();
+        apiRouter.get('/plugins/', [this.authMiddleware.authRequired], pluginsController.getPlugins);
+
+        //node.ts
+        const nodeController = new NodeController();
+        apiRouter.get('/node', [this.authMiddleware.authRequired], nodeController.getStatus);
+
+        this.express.use('', apiRouter);
     };
 }
+
+export { APIServer }
