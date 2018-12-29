@@ -164,7 +164,7 @@ class DockerHelper extends Helper {
     };
 
     public startContainer = async () => {
-        if(await this.ensureStopped()){
+        if (await this.ensureStopped()) {
             this.server.updateStatus(Status.Starting);
         }
 
@@ -201,7 +201,7 @@ class DockerHelper extends Helper {
     };
 
     private stdinEndListener = () => {
-        SSManager.logger.verbose("[Server "  + this.server.id + "] Processes stream ended.");
+        SSManager.logger.verbose("[Server " + this.server.id + "] Processes stream ended.");
         this.server.killContainer();
     };
 
@@ -246,10 +246,14 @@ class DockerHelper extends Helper {
             this.containerLoggerStream.unwatch();
         this.containerLoggerStream = undefined;
 
+        if (this.containerShellStream)
+            this.containerShellStream._output.removeAllListeners();
+
         this.containerShellStream = undefined;
 
-        if(this.processStdinStream)
+        if (this.processStdinStream)
             this.processStdinStream.socket.removeAllListeners();
+
         this.processStdinStream = undefined;
     };
 
@@ -262,26 +266,19 @@ class DockerHelper extends Helper {
             stdout: true,
             stderr: true
         });
-        // this.containerShellStream.on('close', () => {
-        //    console.log("closed?");
-        // });
-        //
-        // this.containerShellStream.output.on('finish', () => {
-        //     console.log("finished?");
-        // });
 
         //This is always enabled
+        //LMAO WTF! WHY IS THIS AT _.output AND WHY IS IT NOT DOCUMENTED
         this.containerShellStream._output.on('end', () => {
-            SSManager.logger.verbose("[Server "  + this.server.id + "] Container stream ended.");
+            SSManager.logger.verbose("[Server " + this.server.id + "] Container stream ended.");
             this.closeStreams();
             this.server.updateStatus(Status.Off);
         }).on('error', (data) => {
             this.server.logAnnounce("Your servers container encountered an error; " + data);
         });
 
-        debugger;
-
         //Only enabled if specified
+        //TODO: this might be brolken
         if (this.server.currentGame.logging.useStdout) {
             this.containerShellStream.on('data', data => {
                 this.server.logInfo(data);
