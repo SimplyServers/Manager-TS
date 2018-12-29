@@ -24,7 +24,12 @@ class FilesystemHelper extends Helper {
 
         let fileData = [];
         await Promise.all(fileList.map(async (indFile) => {
-            const stat = await fs.stat(indFile);
+
+            const indFilePath = path.join(filePath, indFile);
+            if(this.checkIfIdentity(indFilePath))
+                return;
+
+            const stat = await fs.stat(indFilePath);
             fileData.push({
                 name: indFile,
                 created: stat.ctime,

@@ -380,7 +380,6 @@ class Gameserver extends EventEmitter {
 
     private executeShellStack = async (stack: any) => {
         await new Promise((resolve) => {
-            SSManager.logger.verbose("Stack: " + stack);
             async.forEachSeries(stack, (cmd: any, next) => {
                 let shell = 'su';
                 let params = [
