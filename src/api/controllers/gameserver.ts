@@ -140,7 +140,7 @@ class ServersController {
                     await req.server.stop();
                     break;
                 case 'kill':
-                    await req.server.kill(true);
+                    await req.server.forceKill();
                     break;
                 default:
                     return next(new ServerActionError("Invalid power action."))

@@ -1,7 +1,7 @@
 export enum Status {
-    Starting,
-    Stopping,
-    Running,
-    Off,
-    Crashed
+    Starting = "Starting",
+    Stopping = "Stopping",
+    Running = "Running",
+    Off = "Off",
+    Crashed = "Crashed"
 }

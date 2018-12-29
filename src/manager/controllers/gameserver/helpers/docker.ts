@@ -11,10 +11,10 @@ import {ServerActionError} from "../../../../util/errors/serverActionError";
 class DockerHelper extends Helper {
 
     private readonly dockerContoller;
-    private containerShellStream: any;
-    private processStdinStream: any;
-    private containerLoggerStream: Tail.Tail;
-    private container;
+    containerShellStream;
+    processStdinStream;
+    containerLoggerStream;
+    container;
 
     constructor(server: Gameserver) {
         super(server);
@@ -33,7 +33,7 @@ class DockerHelper extends Helper {
     public rebuild = async () => {
         await this.destroy();
         await this.create();
-    }
+    };
 
     public destroy = async () => {
         await this.ensureStopped();
@@ -157,14 +157,16 @@ class DockerHelper extends Helper {
     private ensureStopped = async (): Promise<boolean> => {
         const data = await this.container.inspect();
         if (data.State.Status === 'running') {
-            await this.server.forceKillContainer();
+            await this.server.killContainer(false);
             return true
         }
         return false;
     };
 
     public startContainer = async () => {
-        await this.ensureStopped();
+        if(await this.ensureStopped()){
+            this.server.updateStatus(Status.Starting);
+        }
 
         //Get our container up and running
         await this.container.start();
@@ -174,7 +176,7 @@ class DockerHelper extends Helper {
         startCmd = startCmd.replace(new RegExp('{port}', 'g'), String(this.server.port)); //Server port
         startCmd = startCmd.replace(new RegExp('{players}', 'g'), String(this.server.players)); //Server port
 
-        SSManager.logger.verbose("start command: " + startCmd)
+        SSManager.logger.verbose("start command: " + startCmd);
 
         //Docker start commands
         const dockerOptions = {
@@ -189,15 +191,18 @@ class DockerHelper extends Helper {
         //Execute commands on container
         let exec = await this.container.exec(dockerOptions);
         //Get the stream created by the process
-        this.processStdinStream = (await exec.start({stream: true, stdin: true, stdout: true, stderr: true})).output;
+        this.processStdinStream = (await exec.start({stream: true, stdout: true, stderr: true})).output;
         this.processStdinStream.setEncoding("utf8");
 
         await this.initContainerShell();
         await this.initFileLog();
 
-        this.processStdinStream.on('end', () => {
-            this.server.forceKillContainer();
-        });
+        this.processStdinStream.socket.on('end', this.stdinEndListener);
+    };
+
+    private stdinEndListener = () => {
+        SSManager.logger.verbose("[Server "  + this.server.id + "] Processes stream ended.");
+        this.server.killContainer();
     };
 
     public killContainer = async () => {
@@ -240,7 +245,11 @@ class DockerHelper extends Helper {
         if (this.containerLoggerStream)
             this.containerLoggerStream.unwatch();
         this.containerLoggerStream = undefined;
+
         this.containerShellStream = undefined;
+
+        if(this.processStdinStream)
+            this.processStdinStream.socket.removeAllListeners();
         this.processStdinStream = undefined;
     };
 
@@ -253,15 +262,24 @@ class DockerHelper extends Helper {
             stdout: true,
             stderr: true
         });
-        this.containerShellStream.setEncoding('utf8');
+        // this.containerShellStream.on('close', () => {
+        //    console.log("closed?");
+        // });
+        //
+        // this.containerShellStream.output.on('finish', () => {
+        //     console.log("finished?");
+        // });
 
         //This is always enabled
-        this.containerShellStream.on('end', () => {
+        this.containerShellStream._output.on('end', () => {
+            SSManager.logger.verbose("[Server "  + this.server.id + "] Container stream ended.");
             this.closeStreams();
             this.server.updateStatus(Status.Off);
         }).on('error', (data) => {
             this.server.logAnnounce("Your servers container encountered an error; " + data);
         });
+
+        debugger;
 
         //Only enabled if specified
         if (this.server.currentGame.logging.useStdout) {

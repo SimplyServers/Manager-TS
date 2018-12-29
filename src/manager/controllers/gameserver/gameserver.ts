@@ -367,10 +367,18 @@ class Gameserver extends EventEmitter {
         this.isInstalled = isInstalled;
     };
 
-    public forceKillContainer = async () => {
-        this.updateStatus(Status.Stopping);
+    public forceKill = async () => {
+        if (this.status === Status.Off)
+            throw new ServerActionError("Server is not running.");
+
+        await this.killContainer();
+    };
+
+    public killContainer = async (updateStatus: boolean = true) => {
+        if(updateStatus)
+            this.updateStatus(Status.Stopping);
+
         await this.dockerHelper.killContainer();
-        this.updateStatus(Status.Off);
     };
 
     private executeShellStack = async (stack: any) => {
