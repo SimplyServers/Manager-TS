@@ -64,7 +64,7 @@ class ServersController {
         }
 
         try {
-            await req.server.fsHelper.deleteFile(data.path);
+            await req.server.fsHelper.removeFile(data.path);
         } catch (e) {
             next(e);
         }
