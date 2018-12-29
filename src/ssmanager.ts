@@ -6,6 +6,7 @@ import {IConfig} from "./util/config";
 import * as configData from "../config.json";
 import {GameserverController} from "./manager/controllers/gameserver/gameserverManager";
 import {APIServer} from "./api/server";
+import {DockerInstaller} from "./manager/dockerInstaller";
 
 class SSManager {
     static config: IConfig;
@@ -30,6 +31,11 @@ class SSManager {
     }
 
     private bootstrap = async () => {
+        //Bootstrap docker
+        const dockerInstaller = new DockerInstaller();
+        SSManager.logger.info("Checking Docker images...");
+        await dockerInstaller.bootstrap();
+
         //Bootstrap configs
         this.configsController = new ConfigsController("../storage/");
         SSManager.logger.info("Loading games...");

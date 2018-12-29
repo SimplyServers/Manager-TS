@@ -27,6 +27,7 @@
   "dependencies": {
     "async": "^2.6.1",
     "body-parser": "^1.18.3",
+    "dev-null": "^0.1.1",
     "diskspace": "^2.0.0",
     "dockerode": "^2.5.7",
     "dockerode-utils": "0.0.7",
