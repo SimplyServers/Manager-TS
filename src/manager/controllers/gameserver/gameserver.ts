@@ -16,6 +16,7 @@ import * as sha1file from "sha1-file";
 import {EventEmitter} from "events";
 import * as Pty from "pty.js";
 import * as stripAnsi from "strip-ansi";
+import {GamedigHelper} from "./helpers/gamedig";
 
 class Gameserver extends EventEmitter {
 
@@ -33,6 +34,7 @@ class Gameserver extends EventEmitter {
     dockerHelper: DockerHelper;
     socketHelper: SocketHelper;
     fsHelper: FilesystemHelper;
+    gamedigHelper: GamedigHelper;
 
     constructor(conf: IServer) {
         super();
@@ -51,6 +53,7 @@ class Gameserver extends EventEmitter {
         this.dockerHelper = new DockerHelper(this);
         this.socketHelper = new SocketHelper(this);
         this.fsHelper = new FilesystemHelper(this);
+        this.gamedigHelper = new GamedigHelper(this);
     }
 
     public exportConfig = (): IServer => {
@@ -171,6 +174,8 @@ class Gameserver extends EventEmitter {
 
         //Start server
         this.updateStatus(Status.Starting);
+
+        this.gamedigHelper.start();
         await this.dockerHelper.startContainer();
     };
 
@@ -364,6 +369,9 @@ class Gameserver extends EventEmitter {
         await this.updateConfig();
     };
 
+    /*
+    This will throw an exception if the server is not running.
+     */
     public forceKill = async () => {
         if (this.status === Status.Off)
             throw new ServerActionError("Server is not running.");
@@ -371,11 +379,17 @@ class Gameserver extends EventEmitter {
         await this.killContainer();
     };
 
+    /*
+    This won't, so use it internally.
+     */
     public killContainer = async (updateStatus: boolean = true) => {
         if(updateStatus)
             this.updateStatus(Status.Stopping);
 
-        await this.dockerHelper.killContainer();
+        if (this.status !== Status.Off) {
+            this.gamedigHelper.stop();
+            await this.dockerHelper.killContainer();
+        }
     };
 
     private executeShellStack = async (stack: any) => {
