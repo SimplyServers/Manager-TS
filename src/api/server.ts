@@ -1,6 +1,7 @@
 import * as express from 'express'
 import * as SocketIO from 'socket.io';
 import * as bodyParser from "body-parser";
+import * as https from "https";
 
 import {SSManager} from "../ssmanager";
 import {ConfigsController} from "../manager/controllers/configs/configManager";
@@ -12,6 +13,7 @@ import {NodeController} from "./controllers/node";
 import {PluginsController} from "./controllers/plugins";
 import {ServersController} from "./controllers/gameserver";
 import {LoadedMiddleware} from "./middleware/loaded";
+import {CertManager} from "./certManager";
 
 class APIServer {
     public express;
@@ -21,15 +23,20 @@ class APIServer {
     private readonly authMiddleware;
     private readonly serverMiddleware;
 
+    private readonly certManager;
+
     constructor() {
         this.express = express();
 
         this.authMiddleware = new AuthMiddleware();
         this.serverMiddleware = new ServerMiddleware();
+
+        this.certManager = new CertManager();
     }
 
-    public bootstrapExpress = (): void => {
-        //Pass controllers to the app for safe keeping (access via req.locals.configsController for ex.)
+    public bootstrapExpress = async () => {
+        //Make sure certs are installed
+        await this.certManager.ensureCerts();
 
         //CORS
         this.express.disable('x-powered-by');
@@ -103,15 +110,17 @@ class APIServer {
         });
 
         this.mountRoutes();
-        this.createHttp();
+        await this.createHttp();
     };
 
-    private createHttp = (): void => {
+    private createHttp = async ()  => {
         SSManager.logger.verbose("HTTP server hosted on :" + SSManager.config.api.port);
-        this.http = this.express.listen(SSManager.config.api.port);
+
+        this.http = https.createServer(await this.certManager.getOptions(), this.express);
         this.io = SocketIO(this.http, {
             path: "/s/"
         });
+        this.http.listen(SSManager.config.api.port);
     };
 
     private mountRoutes = (): void => {

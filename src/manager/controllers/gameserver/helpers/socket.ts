@@ -62,11 +62,11 @@ class SocketHelper extends Helper {
 
             socket.on('disconnect', () => {
                 //Remove listeners when we're all done
-                socket.removeListener('statusChange', this.onStatusChange);
-                socket.removeListener('announcement', this.onAnnouncement);
-                socket.removeListener('block', this.onBlock);
-                socket.removeListener('installed', this.onInstalled);
-                socket.removeListener('console', this.onConsole);
+                this.server.removeListener('statusChange', this.onStatusChange);
+                this.server.removeListener('announcement', this.onAnnouncement);
+                this.server.removeListener('block', this.onBlock);
+                this.server.removeListener('installed', this.onInstalled);
+                this.server.removeListener('console', this.onConsole);
                 SSManager.logger.verbose("[Server " + this.server.id + " ] Socket disconnect");
             });
 

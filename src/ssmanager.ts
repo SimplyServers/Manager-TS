@@ -41,7 +41,7 @@ class SSManager {
         //Load API
         SSManager.APIServer = new APIServer();
         SSManager.logger.info("Loading API...");
-        SSManager.APIServer.bootstrapExpress();
+        await SSManager.APIServer.bootstrapExpress();
 
         //Bootstrap configs
         SSManager.configsController = new ConfigsController("../storage/");

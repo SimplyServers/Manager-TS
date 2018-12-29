@@ -99,7 +99,7 @@ class Gameserver extends EventEmitter {
 
         await this.updateConfig();
         await this.dockerHelper.rebuild();
-        await this.runUpdateScripts(false);
+        await this.runUpdateScripts();
 
         this.setBlocked(false);
     };
@@ -130,17 +130,9 @@ class Gameserver extends EventEmitter {
         });
     };
 
-    private runUpdateScripts = async (updateBlock: boolean = true) => {
-        if (this.isBlocked)
-            throw new ServerActionError("Server is locked. It may be installing or updating.");
-
-        if (updateBlock)
-            this.setBlocked(true);
+    private runUpdateScripts = async () => {
         const updateCommands = this.currentGame.update;
         await this.executeShellStack(updateCommands);
-
-        if (updateBlock)
-            this.setBlocked(false);
     };
 
     private runInstallScripts = async () => {
@@ -218,6 +210,7 @@ class Gameserver extends EventEmitter {
         const targetPlugin = SSManager.configsController.plugins.find(pluginData => pluginData.name === plugin);
         if (targetPlugin === undefined)
             throw new ServerActionError("Plugin does not exist.");
+
 
         if (targetPlugin.game !== this.currentGame.name)
             throw new ServerActionError("Plugin not supported.");
@@ -336,7 +329,7 @@ class Gameserver extends EventEmitter {
         this.logAnnounce("Finished installing server. You may now start it!");
 
         this.setBlocked(false);
-        this.setInstalled(true);
+        await this.setInstalled(true);
     };
 
 
@@ -356,15 +349,19 @@ class Gameserver extends EventEmitter {
     public updateStatus = (status: Status) => {
         SSManager.logger.verbose("Server " + this.id + " status updated to " + status);
         this.status = status;
+        this.emit('statusChange', status);
     };
 
     private setBlocked = (isBlocked: boolean) => {
         SSManager.logger.verbose("[Server " + this.id + " ] Blocked set to " + isBlocked);
         this.isBlocked = isBlocked;
+        this.emit('block', isBlocked);
     };
 
-    private setInstalled = (isInstalled: boolean) => {
+    private setInstalled = async (isInstalled: boolean) => {
         this.isInstalled = isInstalled;
+        this.emit('installed', isInstalled);
+        await this.updateConfig();
     };
 
     public forceKill = async () => {

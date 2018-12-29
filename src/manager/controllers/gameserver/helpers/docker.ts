@@ -51,8 +51,6 @@ class DockerHelper extends Helper {
                 throw new ServerActionError("Invalid Docker Type specified in config.");
         }
 
-        console.log("USER ID: " + this.server.id);
-
         //Specify container data
         //Create container and get it all ready
         const newContainer = {
@@ -164,9 +162,7 @@ class DockerHelper extends Helper {
     };
 
     public startContainer = async () => {
-        if (await this.ensureStopped()) {
-            this.server.updateStatus(Status.Starting);
-        }
+        await this.ensureStopped();
 
         //Get our container up and running
         await this.container.start();
@@ -191,13 +187,13 @@ class DockerHelper extends Helper {
         //Execute commands on container
         let exec = await this.container.exec(dockerOptions);
         //Get the stream created by the process
-        this.processStdinStream = (await exec.start({stream: true, stdout: true, stderr: true})).output;
+        this.processStdinStream = (await exec.start({stream: true, stdout: true, stderr: true, stdin: true})).output;
         this.processStdinStream.setEncoding("utf8");
 
         await this.initContainerShell();
         await this.initFileLog();
 
-        this.processStdinStream.socket.on('end', this.stdinEndListener);
+        this.processStdinStream.on('end', this.stdinEndListener);
     };
 
     private stdinEndListener = () => {
@@ -252,7 +248,7 @@ class DockerHelper extends Helper {
         this.containerShellStream = undefined;
 
         if (this.processStdinStream)
-            this.processStdinStream.socket.removeAllListeners();
+            this.processStdinStream.removeAllListeners();
 
         this.processStdinStream = undefined;
     };
