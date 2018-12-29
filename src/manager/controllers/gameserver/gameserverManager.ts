@@ -3,18 +3,14 @@ import * as path from "path";
 import {SSManager} from "../../../ssmanager";
 import {Gameserver} from "./gameserver";
 import {IServer} from "../configs/serverConfig";
-import {ConfigsController} from "../configs/configManager";
 
 class GameserverController{
     public servers: Array<Gameserver>;
 
     private readonly dataFolder: string;
 
-    private readonly configsController: ConfigsController;
-
-    constructor(dataFolder: string, configsController: ConfigsController) {
+    constructor(dataFolder: string) {
         this.dataFolder = dataFolder;
-        this.configsController = configsController;
 
         this.servers = [];
     }
@@ -22,7 +18,7 @@ class GameserverController{
     public loadServers = async () => {
         const serversJSON = await SSUtil.dirToJson(path.join(SSManager.getRoot(), this.dataFolder, "/servers/"));
         serversJSON.map(server => {
-            this.servers.push(new Gameserver(server, this.configsController));
+            this.servers.push(new Gameserver(server));
         })
     };
 
@@ -35,11 +31,11 @@ class GameserverController{
     };
 
     public addNewServer = async (jsonData: IServer) => {
-        const newServer = new Gameserver(jsonData, this.configsController);
+        const newServer = new Gameserver(jsonData);
         this.servers.push(newServer);
         await newServer.updateConfig();
         return newServer;
-    }
+    };
 
     public removeServer = async (targetServer: Gameserver) => {
         let removed = false;

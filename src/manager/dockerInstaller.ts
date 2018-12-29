@@ -22,7 +22,7 @@ class DockerInstaller{
         }
     };
 
-    private addImage = async (path, name) => {
+    private addImage = async (path: string, name: string) => {
         SSManager.logger.verbose("Adding Docker image for " + name);
 
         await new Promise((resolve, reject) => {

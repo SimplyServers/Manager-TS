@@ -6,7 +6,7 @@ import * as async from "async";
 
 class ServersController {
     public getGameservers = async (req, res, next) => {
-        res.json({servers: req.app.locals.serverController.servers})
+        res.json({servers: SSManager.serverController.servers })
     };
 
     public getServer = async (req, res, next) => {
@@ -205,7 +205,7 @@ class ServersController {
 
         //Check for game
         if (givenConfig.game) {
-            const gameJson = req.app.locals.configsController.games.find(game => game.name === givenConfig.game);
+            const gameJson = SSManager.configsController.games.find(game => game.name === givenConfig.game);
             if (gameJson === undefined)
                 return next(new ValidationError("game"));
             config.game = gameJson;
@@ -243,7 +243,7 @@ class ServersController {
     public remove = async (req, res, next) => {
         let removed;
         try {
-            removed = await req.app.locals.serverController.removeServer(req.server);
+            removed = await SSManager.serverController.removeServer(req.server);
         } catch (e) {
             return next(e);
         }
@@ -317,17 +317,28 @@ class ServersController {
         }
 
         //Verify config json
-        if (config.id === undefined || config.game === undefined || config.port === undefined || config.build === undefined) {
+        if (config.id === undefined || config.game === undefined || config.port === undefined || config.build === undefined || config.players === undefined) {
             return next(new ValidationError("config"));
         }
+
         //Verify build json
         let build = config.build;
         if (build.io === undefined || build.cpu === undefined || build.mem === undefined) {
             return next(new ValidationError("build"));
         }
 
+        //Verify players
+        let players = config.players;
+        try{
+            players = Number.parseInt(players);
+        }catch (e) {
+            return next(new ValidationError("config"));
+        }
+
+        config.players = players;
+
         const checkPort = (port) => {
-            return req.app.locals.serverController.servers.find(server => server.port === port) === undefined;
+            return SSManager.serverController.servers.find(server => server.port === port) === undefined;
         };
 
         if (config.port === -1) {
@@ -368,7 +379,7 @@ class ServersController {
         }
 
         //Replace the game text with the actual game json. So, config.game = "Minecraft Spigot 1.13.1" would become the entire json of the game.
-        let gameJson = req.app.locals.configsController.games.find(game => game.name === config.game);
+        let gameJson = SSManager.configsController.games.find(game => game.name === config.game);
 
         if (gameJson === undefined)
             return next(new ValidationError("game"));
@@ -376,16 +387,15 @@ class ServersController {
         config.game = gameJson;
 
         //Check to make sure the server doesn't already exist.
-        if(req.app.locals.serverController.servers.find(server => server.id === config.id) !== undefined)
+        if(SSManager.serverController.servers.find(server => server.id === config.id) !== undefined)
             return next(new ServerActionError("Server already exists."));
 
         config.installed = false; //Server has not been installed
         config.plugins = []; //Plugins start out empty.
 
-
         let newServer;
         try {
-            newServer = await req.app.locals.serverController.addNewServer(config);
+            newServer = await SSManager.serverController.addNewServer(config);
         } catch (e) {
             return next(e);
         }
@@ -393,7 +403,7 @@ class ServersController {
         await newServer.create();
 
         res.json({
-            server: newServer.getJSONConfig()
+            server: newServer.getInfo()
         });
     }
 }

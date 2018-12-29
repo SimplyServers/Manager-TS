@@ -51,6 +51,8 @@ class DockerHelper extends Helper {
                 throw new ServerActionError("Invalid Docker Type specified in config.");
         }
 
+        console.log("USER ID: " + this.server.id);
+
         //Specify container data
         //Create container and get it all ready
         const newContainer = {

@@ -1,6 +1,5 @@
 import {ConfigsController} from "./manager/controllers/configs/configManager";
 import {Logger} from './util/logger';
-import {Gameserver} from "./manager/controllers/gameserver/gameserver";
 import {IConfig} from "./util/config";
 
 import * as configData from "../config.json";
@@ -11,19 +10,22 @@ import {DockerInstaller} from "./manager/dockerInstaller";
 class SSManager {
     static config: IConfig;
     static logger: Logger;
+    static loaded: boolean;
 
-    private configsController;
-    private serverController;
-    private APIServer;
+    static configsController;
+    static serverController;
+    static APIServer;
 
     constructor() {
         SSManager.logger = new Logger(false);
         SSManager.config = configData;
+        SSManager.loaded = false;
 
         SSManager.logger.info("▆▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃█  Simply Servers Manager  █▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▆");
         SSManager.logger.info("Starting bootstrap...");
         this.bootstrap().then(() => {
             SSManager.logger.info("Bootstrap finished.");
+            SSManager.loaded = true;
             SSManager.logger.info("▆▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▆");
         }).catch((err) => {
             SSManager.logger.error("Failed to bootstrap; " + err)
@@ -36,22 +38,22 @@ class SSManager {
         SSManager.logger.info("Checking Docker images...");
         await dockerInstaller.bootstrap();
 
+        //Load API
+        SSManager.APIServer = new APIServer();
+        SSManager.logger.info("Loading API...");
+        SSManager.APIServer.bootstrapExpress();
+
         //Bootstrap configs
-        this.configsController = new ConfigsController("../storage/");
+        SSManager.configsController = new ConfigsController("../storage/");
         SSManager.logger.info("Loading games...");
-        await this.configsController.loadGames();
+        await SSManager.configsController.loadGames();
         SSManager.logger.info("Loading plugins...");
-        await this.configsController.loadPlugins();
+        await SSManager.configsController.loadPlugins();
 
         //Bootstrap servers
-        this.serverController = new GameserverController("../storage/", this.configsController);
+        SSManager.serverController = new GameserverController("../storage/");
         SSManager.logger.info("Loading servers...");
-        await this.serverController.loadServers();
-
-        //Load API
-        this.APIServer = new APIServer(this.configsController, this.serverController);
-        SSManager.logger.info("Loading API...");
-        this.APIServer.bootstrapExpress();
+        await SSManager.serverController.loadServers();
     };
 
     static getRoot(): string {

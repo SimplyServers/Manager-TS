@@ -30,15 +30,18 @@
     },
     {
       "type": "shellCommand",
-      "command": "mv spigot-1.13.1.jar server.jar"
+      "command": " mv spigot-1.13.1.jar server.jar"
     }
   ],
   "startCommand": "java -jar -Xms{memory}M -Xmx{memory}M server.jar -port {port} -s {players}",
   "stopConsoleCommand": "stop",
-  "dockertype": "java",
+  "dockerType": "Java",
   "logging": {
-    "useLogFile": true,
-    "path": "logs/latest.log"
+    "logFile": {
+      "useLogFile": true,
+      "path": "logs/latest.log"
+    },
+    "useStdout": false
   },
   "verify": [
     {

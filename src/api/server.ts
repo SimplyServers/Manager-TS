@@ -1,4 +1,6 @@
 import * as express from 'express'
+import * as SocketIO from 'socket.io';
+import * as bodyParser from "body-parser";
 
 import {SSManager} from "../ssmanager";
 import {ConfigsController} from "../manager/controllers/configs/configManager";
@@ -9,23 +11,18 @@ import {GamesController} from "./controllers/games";
 import {NodeController} from "./controllers/node";
 import {PluginsController} from "./controllers/plugins";
 import {ServersController} from "./controllers/gameserver";
+import {LoadedMiddleware} from "./middleware/loaded";
 
 class APIServer {
     public express;
     public http;
-    static io;
-
-    private readonly configsController;
-    private readonly serverController;
+    public io;
 
     private readonly authMiddleware;
     private readonly serverMiddleware;
 
-    constructor(configsController: ConfigsController, serverController: GameserverController) {
+    constructor() {
         this.express = express();
-
-        this.configsController = configsController;
-        this.serverController = serverController;
 
         this.authMiddleware = new AuthMiddleware();
         this.serverMiddleware = new ServerMiddleware();
@@ -33,8 +30,6 @@ class APIServer {
 
     public bootstrapExpress = (): void => {
         //Pass controllers to the app for safe keeping (access via req.locals.configsController for ex.)
-        this.express.locals.configsController = this.configsController;
-        this.express.locals.serverController = this.serverController;
 
         //CORS
         this.express.disable('x-powered-by');
@@ -52,11 +47,19 @@ class APIServer {
             next();
         });
 
+        //Body Parser
+        this.express.use(bodyParser.urlencoded({extended: false})); //Allow Express to handle json in bodies
+        this.express.use(bodyParser.json()); //                                ^
+
         //Basic home page
         this.express.get('/', function (req, res) {
             res.set('location', 'https://simplyservers.io');
             res.status(301).send()
         });
+
+        //Global middleware
+        const mustBeLoaded = new LoadedMiddleware();
+        this.express.use(mustBeLoaded.mustBeLoaded);
 
         //Error handling
         this.express.use(function (err, req, res, next) {
@@ -106,6 +109,9 @@ class APIServer {
     private createHttp = (): void => {
         SSManager.logger.verbose("HTTP server hosted on :" + SSManager.config.api.port);
         this.http = this.express.listen(SSManager.config.api.port);
+        this.io = SocketIO(this.http, {
+            path: "/s/"
+        });
     };
 
     private mountRoutes = (): void => {
@@ -127,6 +133,22 @@ class APIServer {
         const gameserverController = new ServersController();
         apiRouter.get('/server/', [this.authMiddleware.authRequired], gameserverController.getGameservers);
         apiRouter.get('/server/:server', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.getServer);
+        apiRouter.post('/server/:server/resetPassword', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.resetPassword);
+        apiRouter.post('/server/:server/writeFile', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.writeFile);
+        apiRouter.post('/server/:server/removeFile', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.removeFile);
+        apiRouter.post('/server/:server/fileContents', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.fileContents);
+        apiRouter.post('/server/:server/getDir', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.getDir);
+        apiRouter.post('/server/:server/execute', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.execute);
+        apiRouter.get('/server/:server/power/:power', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.power);
+        apiRouter.get('/server/:server/reinstall', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.reinstall);
+        apiRouter.post('/server/:server/edit', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.edit);
+        apiRouter.get('/server/:server/update', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.update);
+        apiRouter.get('/server/:server/install', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.install);
+        apiRouter.get('/server/:server/remove', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.remove);
+        apiRouter.post('/server/:server/removePlugin', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.removePlugin);
+        apiRouter.post('/server/:server/installPlugin', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.installPlugin);
+        apiRouter.get('/server/:server/plugins/', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.getPlugins);
+        apiRouter.post('/server/add', [this.authMiddleware.authRequired], gameserverController.add);
 
         this.express.use('', apiRouter);
     };

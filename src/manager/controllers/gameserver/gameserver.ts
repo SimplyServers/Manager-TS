@@ -4,18 +4,18 @@ import {SocketHelper} from "./helpers/socket";
 import {IServer} from "../configs/serverConfig";
 import {FilesystemHelper} from "./helpers/fs";
 import {IGame} from "../configs/gameConfig";
+import {SSManager} from "../../../ssmanager";
+import {ServerActionError} from "../../../util/errors/serverActionError";
 
 import * as fs from "fs-extra";
 import * as path from 'path';
-import {SSManager} from "../../../ssmanager";
-import {ServerActionError} from "../../../util/errors/serverActionError";
 import * as proc from "child_process";
 import * as util from "util";
 import * as async from "async";
 import * as sha1file from "sha1-file";
 import {EventEmitter} from "events";
 import * as Pty from "pty.js";
-import {ConfigsController} from "../configs/configManager";
+import * as stripAnsi from "strip-ansi";
 
 class Gameserver extends EventEmitter {
 
@@ -34,9 +34,7 @@ class Gameserver extends EventEmitter {
     socketHelper: SocketHelper;
     fsHelper: FilesystemHelper;
 
-    private readonly configsController: ConfigsController;
-
-    constructor(conf: IServer, configsController: ConfigsController) {
+    constructor(conf: IServer) {
         super();
 
         this.currentGame = conf.game;
@@ -53,8 +51,6 @@ class Gameserver extends EventEmitter {
         this.dockerHelper = new DockerHelper(this);
         this.socketHelper = new SocketHelper(this);
         this.fsHelper = new FilesystemHelper(this);
-
-        this.configsController = configsController;
     }
 
     public exportConfig = (): IServer => {
@@ -116,10 +112,15 @@ class Gameserver extends EventEmitter {
         if (this.isBlocked)
             throw new ServerActionError("Server is locked. It may be installing or updating.");
         this.setBlocked(true);
-
-        await proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/newUser.sh") + " %s %s", this.id, password));
+        await new Promise((resolve, reject) => {
+            proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/newUser.sh") + " %s %s", this.id, password), (err) => {
+                if(err) return reject(err);
+                else return resolve();
+            });
+        });
         await this.dockerHelper.create();
         await this.createIdentity();
+
         this.setBlocked(false);
     };
 
@@ -133,33 +134,27 @@ class Gameserver extends EventEmitter {
         if (this.isBlocked)
             throw new ServerActionError("Server is locked. It may be installing or updating.");
 
-        if(updateBlock)
+        if (updateBlock)
             this.setBlocked(true);
         const updateCommands = this.currentGame.update;
         await this.executeShellStack(updateCommands);
 
-        if(updateBlock)
+        if (updateBlock)
             this.setBlocked(false);
     };
 
-    private runInstallScripts = async (updateBlock: boolean = true) => {
-        if (this.isBlocked)
-            throw new ServerActionError("Server is locked. It may be installing or updating.");
-
-        if(updateBlock)
-            this.setBlocked(true);
+    private runInstallScripts = async () => {
         const installCommands = this.currentGame.install;
         await this.executeShellStack(installCommands);
-
-        if(updateBlock)
-            this.setBlocked(false);
     };
 
     public start = async () => {
         if (this.isBlocked)
             throw new ServerActionError("Server is locked. It may be installing or updating.");
+
         if (this.status !== Status.Off)
             throw new ServerActionError("Server is not off.");
+
         this.logAnnounce("Verifying server integrity...");
 
         //Make sure the sha1 hashes are ok
@@ -220,14 +215,14 @@ class Gameserver extends EventEmitter {
 
         this.setBlocked(true);
 
-        const targetPlugin = this.configsController.plugins.find(pluginData => pluginData.name === plugin);
+        const targetPlugin = SSManager.configsController.plugins.find(pluginData => pluginData.name === plugin);
         if (targetPlugin === undefined)
             throw new ServerActionError("Plugin does not exist.");
 
-        if(targetPlugin.game !== this.currentGame.name)
+        if (targetPlugin.game !== this.currentGame.name)
             throw new ServerActionError("Plugin not supported.");
 
-        if(this.installedPlugins.find(installedData => installedData.name === plugin) !== undefined)
+        if (this.installedPlugins.find(installedData => installedData.name === plugin) !== undefined)
             throw new ServerActionError("Plugin already installed.");
 
         this.installedPlugins.push(targetPlugin);
@@ -243,7 +238,13 @@ class Gameserver extends EventEmitter {
         //Strip all possible things that might mess this up
         const newPassword = '"' + password.replace(/(["\s'$`\\])/g, '\\$1') + '"';
 
-        await proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/resetPassword.sh") + " %s %s", this.id, password));
+        await new Promise((resolve, reject) => {
+            proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/resetPassword.sh") + " %s %s", this.id, newPassword), (err) => {
+                if(err) return reject(err);
+                else return resolve();
+            });
+        });
+
     };
 
     /*
@@ -260,12 +261,18 @@ class Gameserver extends EventEmitter {
         //If an error occurs here we need to unblock the server
         try {
             await this.dockerHelper.destroy();
-        }catch (e) {
+        } catch (e) {
             this.setBlocked(false);
             throw new ServerActionError("Failed to remove Docker; " + e);
         }
 
-        await proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/removeUser.sh") + " %s", this.id));
+        await new Promise((resolve, reject) => {
+            proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/removeUser.sh") + " %s", this.id), (err) => {
+                if(err) return reject(err);
+                else return resolve();
+            });
+        });
+
         await fs.unlink(path.join(SSManager.getRoot(), "../storage/servers/", this.id + ".json"));
     };
 
@@ -283,7 +290,13 @@ class Gameserver extends EventEmitter {
         await this.updateConfig();
 
         this.logAnnounce("Removing old server data...");
-        await proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/cleanUser.sh") + " %s", this.id));
+        await new Promise((resolve, reject) => {
+            proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/cleanUser.sh") + " %s", this.id), (err) => {
+                if(err) return reject(err);
+                else return resolve();
+            });
+        });
+
         await this.createIdentity();
 
         this.logAnnounce("Installing server files...");
@@ -307,8 +320,10 @@ class Gameserver extends EventEmitter {
     public install = async () => {
         if (this.isBlocked)
             throw new ServerActionError("Server is locked. It may be installing or updating.");
+
         if (this.isInstalled)
             throw new ServerActionError("Reinstall the server instead of installing.");
+
         if (this.status !== Status.Off)
             throw new ServerActionError("Server is not off.");
 
@@ -329,10 +344,12 @@ class Gameserver extends EventEmitter {
         if (this.status === Status.Starting)
             this.updateStatus(Status.Running);
         SSManager.logger.verbose("[Server " + this.id + "] " + data);
+        this.emit('console', stripAnsi(data));
     };
 
     public logAnnounce = (data: string) => {
         SSManager.logger.verbose("[Server " + this.id + "] " + data);
+        this.emit('announcement', data);
     };
 
 
@@ -342,6 +359,7 @@ class Gameserver extends EventEmitter {
     };
 
     private setBlocked = (isBlocked: boolean) => {
+        SSManager.logger.verbose("[Server " + this.id + " ] Blocked set to " + isBlocked);
         this.isBlocked = isBlocked;
     };
 
