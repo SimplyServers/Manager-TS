@@ -289,7 +289,7 @@ class Gameserver extends EventEmitter {
 
         this.logAnnounce("Removing old server data...");
         await new Promise((resolve, reject) => {
-            proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/cleanUser.sh") + " %s", this.id), (err) => {
+            proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/clearUser.sh") + " %s", this.id), (err) => {
                 if(err) return reject(err);
                 else return resolve();
             });
