@@ -15,6 +15,7 @@ import * as async from "async";
 import * as sha1file from "sha1-file";
 import {EventEmitter} from "events";
 import * as Pty from "pty.js";
+import {ConfigsController} from "../configs/configManager";
 
 class Gameserver extends EventEmitter {
 
@@ -33,7 +34,9 @@ class Gameserver extends EventEmitter {
     socketHelper: SocketHelper;
     fsHelper: FilesystemHelper;
 
-    constructor(conf: IServer) {
+    private readonly configsController: ConfigsController;
+
+    constructor(conf: IServer, configsController: ConfigsController) {
         super();
 
         this.currentGame = conf.game;
@@ -50,6 +53,8 @@ class Gameserver extends EventEmitter {
         this.dockerHelper = new DockerHelper(this);
         this.socketHelper = new SocketHelper(this);
         this.fsHelper = new FilesystemHelper(this);
+
+        this.configsController = configsController;
     }
 
     public exportConfig = (): IServer => {
@@ -195,6 +200,8 @@ class Gameserver extends EventEmitter {
     public removePlugin = async (plugin: string) => {
         if (this.isBlocked)
             throw new ServerActionError("Server is locked. It may be installing or updating.");
+        if (this.status !== Status.Off)
+            throw new ServerActionError("Server is not off.");
 
         this.setBlocked(true);
 
@@ -206,19 +213,88 @@ class Gameserver extends EventEmitter {
     };
 
     public installPlugin = async (plugin: string) => {
+        if (this.isBlocked)
+            throw new ServerActionError("Server is locked. It may be installing or updating.");
+        if (this.status !== Status.Off)
+            throw new ServerActionError("Server is not off.");
 
+        this.setBlocked(true);
+
+        const targetPlugin = this.configsController.plugins.find(pluginData => pluginData.name === plugin);
+        if (targetPlugin === undefined)
+            throw new ServerActionError("Plugin does not exist.");
+
+        if(targetPlugin.game !== this.currentGame.name)
+            throw new ServerActionError("Plugin not supported.");
+
+        if(this.installedPlugins.find(installedData => installedData.name === plugin) !== undefined)
+            throw new ServerActionError("Plugin already installed.");
+
+        this.installedPlugins.push(targetPlugin);
+        await this.updateConfig();
+
+        await this.executeShellStack(targetPlugin.install);
+
+        this.setBlocked(false);
     };
 
     public changePassword = async (password: string) => {
-        //'"' + cmd.replace(/(["\s'$`\\])/g, '\\$1') + '"'
+        //TODO: double check if support is added for SFTP
+        //Strip all possible things that might mess this up
+        const newPassword = '"' + password.replace(/(["\s'$`\\])/g, '\\$1') + '"';
+
+        await proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/resetPassword.sh") + " %s %s", this.id, password));
     };
 
+    /*
+    WARNING: Do not directly call this, as it will not remove the server from the listing.
+     */
     public remove = async () => {
+        if (this.isBlocked)
+            throw new ServerActionError("Server is locked. It may be installing or updating.");
+        if (this.status !== Status.Off)
+            throw new ServerActionError("Server is not off.");
 
+        this.setBlocked(true);
+
+        //If an error occurs here we need to unblock the server
+        try {
+            await this.dockerHelper.destroy();
+        }catch (e) {
+            this.setBlocked(false);
+            throw new ServerActionError("Failed to remove Docker; " + e);
+        }
+
+        await proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/removeUser.sh") + " %s", this.id));
+        await fs.unlink(path.join(SSManager.getRoot(), "../storage/servers/", this.id + ".json"));
     };
 
     public reinstall = async () => {
+        if (this.isBlocked)
+            throw new ServerActionError("Server is locked. It may be installing or updating.");
+        if (!this.isInstalled)
+            throw new ServerActionError("Install the server instead of reinstalling.");
+        if (this.status !== Status.Off)
+            throw new ServerActionError("Server is not off.");
 
+        this.setBlocked(true);
+
+        this.logAnnounce("Reinstalling server...");
+        await this.updateConfig();
+
+        this.logAnnounce("Removing old server data...");
+        await proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/cleanUser.sh") + " %s", this.id));
+        await this.createIdentity();
+
+        this.logAnnounce("Installing server files...");
+        await this.runInstallScripts();
+
+        this.logAnnounce("Rebuilding container...");
+        await this.dockerHelper.rebuild();
+
+        this.logAnnounce("Finished reinstalling server. You may now start it!");
+
+        this.setBlocked(false);
     };
 
     public stop = async () => {

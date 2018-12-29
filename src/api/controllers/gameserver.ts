@@ -241,11 +241,15 @@ class ServersController {
     };
 
     public remove = async (req, res, next) => {
+        let removed;
         try {
-            await req.server.remove();
+            removed = await req.app.locals.serverController.removeServer(req.server);
         } catch (e) {
             return next(e);
         }
+
+        if(!removed)
+            return next(new ValidationError("server"));
 
         res.json({});
     };
