@@ -28,6 +28,8 @@ class FilesystemHelper extends Helper {
             if(this.checkIfIdentity(indFilePath))
                 return;
 
+            const ext = path.extname(indFile);
+
             const stat = await fs.stat(indFilePath);
             fileData.push({
                 name: indFile,
@@ -36,7 +38,8 @@ class FilesystemHelper extends Helper {
                 size: stat.size,
                 symlink: stat.isSymbolicLink(),
                 isDir: stat.isDirectory(),
-                isFile: stat.isFile()
+                isFile: stat.isFile(),
+                edible: !(stat.size > 4000) && !(ext !== ".txt" && ext !== ".properties" && ext !== ".nbt" && ext !== ".yaml" && ext !== ".json" && ext !== ".yml")
             })
         }));
 
@@ -49,7 +52,7 @@ class FilesystemHelper extends Helper {
             throw new FileError(partialPath);
 
         const ext = path.extname(filePath);
-        if (ext !== ".txt" && ext !== ".properties" && ext !== ".nbt" && ext !== ".yaml" && ext !== ".json")
+        if (ext !== ".txt" && ext !== ".properties" && ext !== ".nbt" && ext !== ".yaml" && ext !== ".json" && ext !== ".yml")
             throw new FileError(partialPath);
 
         const stat = await fs.stat(filePath);
