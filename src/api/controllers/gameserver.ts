@@ -53,7 +53,7 @@ class ServersController {
         try {
             await req.server.fsHelper.writeFile(data.path, data.contents);
         } catch (e) {
-            next(e);
+            return next(e);
         }
 
         res.json({});
@@ -72,7 +72,7 @@ class ServersController {
         try {
             await req.server.fsHelper.removeFile(data.path);
         } catch (e) {
-            next(e);
+            return next(e);
         }
 
         res.json({});
@@ -92,7 +92,7 @@ class ServersController {
         try {
             contents = await req.server.fsHelper.getFileContents(data.path);
         } catch (e) {
-            next(e);
+            return next(e);
         }
 
         res.json({contents: contents});
@@ -112,7 +112,7 @@ class ServersController {
         try {
             contents = await req.server.fsHelper.getDir(data.path);
         } catch (e) {
-            next(e);
+            return next(e);
         }
 
         res.json({contents: contents});

@@ -68,8 +68,11 @@ class APIServer {
         const mustBeLoaded = new LoadedMiddleware();
         this.express.use(mustBeLoaded.mustBeLoaded);
 
+        this.mountRoutes();
+
         //Error handling
         this.express.use(function (err, req, res, next) {
+            console.log("proper error handler fired.");
             if (err.name === 'ServerActionError') {
                 res.status(500);
                 if (err.showInProd) {
@@ -109,7 +112,6 @@ class APIServer {
             }
         });
 
-        this.mountRoutes();
         await this.createHttp();
     };
 

@@ -301,7 +301,14 @@ class Gameserver extends EventEmitter {
         await this.runInstallScripts();
 
         this.logAnnounce("Rebuilding container...");
-        await this.dockerHelper.rebuild();
+
+        //Catch this error so the server doesn't get stuck in blocked mode
+        try {
+            await this.dockerHelper.rebuild();
+        }catch (e) {
+            this.setBlocked(false);
+            throw new ServerActionError("Failed to remove Docker; " + e);
+        }
 
         this.logAnnounce("Finished reinstalling server. You may now start it!");
 
