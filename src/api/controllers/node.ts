@@ -11,8 +11,8 @@ class NodeController{
                         cpu: cpu,
                         totalmem: osUtils.totalmem(),
                         freemem: osUtils.freemem(),
-                        totaldisk: "unknown",
-                        freedisk: "unknown"
+                        totaldisk: 1,
+                        freedisk: 1
                     };
                 } else {
                     status = {

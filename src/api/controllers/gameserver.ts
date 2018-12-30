@@ -6,7 +6,13 @@ import * as async from "async";
 
 class ServersController {
     public getGameservers = async (req, res, next) => {
-        res.json({servers: SSManager.serverController.servers })
+        const serverList = [];
+
+        SSManager.serverController.servers.map(server => {
+           serverList.push(server.getInfo());
+        });
+
+        res.json({servers: serverList })
     };
 
     public getServer = async (req, res, next) => {
