@@ -32,8 +32,8 @@ class FilesystemHelper extends Helper {
             const stat = await fs.stat(indFilePath);
             fileData.push({
                 name: indFile,
-                created: stat.ctime,
-                modified: stat.mtime,
+                created: new Date(stat.ctime).toLocaleString(),
+                modified: new Date(stat.mtime).toLocaleString(),
                 size: stat.size,
                 symlink: stat.isSymbolicLink(),
             })
