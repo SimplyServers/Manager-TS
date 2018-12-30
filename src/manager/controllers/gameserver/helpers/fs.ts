@@ -6,6 +6,7 @@ import * as querystring from "querystring";
 import * as fs from "fs-extra";
 import * as userid from "userid";
 import {FileError} from "../../../../util/errors/fileError";
+import {ServerActionError} from "../../../../util/errors/serverActionError";
 
 class FilesystemHelper extends Helper {
     constructor(server: Gameserver) {
@@ -16,6 +17,9 @@ class FilesystemHelper extends Helper {
     File functions
      */
     public getDir = async (partialPath: string) => {
+        if(this.server.isBlocked)
+            throw new ServerActionError("Server is locked. It may be installing or updating.");
+
         const filePath = this.extendPath(partialPath);
         if (this.checkIfIdentity(filePath))
             throw new FileError(partialPath);
@@ -39,7 +43,7 @@ class FilesystemHelper extends Helper {
                 symlink: stat.isSymbolicLink(),
                 isDir: stat.isDirectory(),
                 isFile: stat.isFile(),
-                edible: !(stat.size > 4000) && !(ext !== ".txt" && ext !== ".properties" && ext !== ".nbt" && ext !== ".yaml" && ext !== ".json" && ext !== ".yml")
+                edible: stat.isFile() && !(stat.size > 4000) && !(ext !== ".txt" && ext !== ".properties" && ext !== ".nbt" && ext !== ".yaml" && ext !== ".json" && ext !== ".yml")
             })
         }));
 
@@ -47,6 +51,9 @@ class FilesystemHelper extends Helper {
     };
 
     public getFileContents = async (partialPath: string) => {
+        if(this.server.isBlocked)
+            throw new ServerActionError("Server is locked. It may be installing or updating.");
+
         const filePath = this.extendPath(partialPath);
         if (this.checkIfIdentity(filePath))
             throw new FileError(partialPath);
@@ -83,6 +90,9 @@ class FilesystemHelper extends Helper {
     };
 
     public writeFile = async (partialPath: string, contents: string) => {
+        if(this.server.isBlocked)
+            throw new ServerActionError("Server is locked. It may be installing or updating.");
+
         const filePath = this.extendPath(partialPath);
 
         if (this.checkIfIdentity(filePath))
@@ -93,6 +103,9 @@ class FilesystemHelper extends Helper {
     };
 
     public removeFile = async (partialPath: string) => {
+        if(this.server.isBlocked)
+            throw new ServerActionError("Server is locked. It may be installing or updating.");
+
         const filePath = this.extendPath(partialPath);
 
         if (this.checkIfIdentity(filePath))
