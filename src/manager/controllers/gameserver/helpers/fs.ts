@@ -24,7 +24,6 @@ class FilesystemHelper extends Helper {
 
         let fileData = [];
         await Promise.all(fileList.map(async (indFile) => {
-
             const indFilePath = path.join(filePath, indFile);
             if(this.checkIfIdentity(indFilePath))
                 return;
@@ -36,6 +35,8 @@ class FilesystemHelper extends Helper {
                 modified: new Date(stat.mtime).toLocaleString(),
                 size: stat.size,
                 symlink: stat.isSymbolicLink(),
+                isDir: stat.isDirectory(),
+                isFile: stat.isFile()
             })
         }));
 
