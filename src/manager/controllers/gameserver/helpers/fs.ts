@@ -43,7 +43,7 @@ class FilesystemHelper extends Helper {
                 symlink: stat.isSymbolicLink(),
                 isDir: stat.isDirectory(),
                 isFile: stat.isFile(),
-                edible: stat.isFile() && !(stat.size > 4000) && !(ext !== ".txt" && ext !== ".properties" && ext !== ".nbt" && ext !== ".yaml" && ext !== ".json" && ext !== ".yml")
+                edible: stat.isFile() && !(stat.size > 1000000) && !(ext !== ".txt" && ext !== ".properties" && ext !== ".nbt" && ext !== ".yaml" && ext !== ".json" && ext !== ".yml"  && ext !== ".log")
             })
         }));
 
@@ -59,11 +59,11 @@ class FilesystemHelper extends Helper {
             throw new FileError(partialPath);
 
         const ext = path.extname(filePath);
-        if (ext !== ".txt" && ext !== ".properties" && ext !== ".nbt" && ext !== ".yaml" && ext !== ".json" && ext !== ".yml")
+        if (ext !== ".txt" && ext !== ".properties" && ext !== ".nbt" && ext !== ".yaml" && ext !== ".json" && ext !== ".yml" && ext !== ".log")
             throw new FileError(partialPath);
 
         const stat = await fs.stat(filePath);
-        if (!stat.isFile() || stat.size > 40000)
+        if (!stat.isFile() || stat.size > 1000000)
             throw new FileError(partialPath);
 
         return await fs.readFile(filePath, "utf8");
