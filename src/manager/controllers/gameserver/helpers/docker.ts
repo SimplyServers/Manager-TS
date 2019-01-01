@@ -10,21 +10,22 @@ import {ServerActionError} from "../../../../util/errors/serverActionError";
 
 class DockerHelper extends Helper {
 
-    private readonly dockerContoller;
+    private readonly dockerController;
     containerShellStream;
     processStdinStream;
     containerLoggerStream;
     container;
 
+
     constructor(server: Gameserver) {
         super(server);
 
         //TODO: may need to add a config option for specificity this manually
-        this.dockerContoller = new Dockerode({
+        this.dockerController = new Dockerode({
             socketPath: "/var/run/docker.sock"
         });
 
-        this.container = this.dockerContoller.getContainer(this.server.id);
+        this.container = this.dockerController.getContainer(this.server.id);
     }
 
     /*
@@ -119,7 +120,7 @@ class DockerHelper extends Helper {
             'HostPort': this.server.port.toString(),
         }];
 
-        await this.dockerContoller.createContainer(newContainer);
+        await this.dockerController.createContainer(newContainer);
     };
 
     /*
@@ -216,7 +217,7 @@ class DockerHelper extends Helper {
             //Get the log file specified
             const filePath = this.server.currentGame.logging.logFile.path;
 
-            //Make sure we don't fuck everything up
+            //We need to make sure these files exist for logging
             await this.server.fsHelper.ensureFile(filePath);
             await this.server.fsHelper.truncateFile(filePath);
 
@@ -226,11 +227,8 @@ class DockerHelper extends Helper {
             });
             this.containerLoggerStream.on('error', () => {
                 if (!hadLogError) {
-                    this.server.logAnnounce("Failed to find log file for server. You may need to restart to see log messages again.");
                     hadLogError = true;
-                    this.server.fsHelper.ensureFile(filePath).then(() => {
-                        hadLogError = false;
-                    })
+                    this.server.logAnnounce("Failed to find log file for server. You may need to restart to see log messages again.");
                 }
             });
         }
@@ -282,5 +280,4 @@ class DockerHelper extends Helper {
         }
     };
 }
-
 export {DockerHelper}

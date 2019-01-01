@@ -1,12 +1,14 @@
 export class FileError extends Error{
 
     private readonly file: string;
+    private readonly code: string;
 
     constructor(file){
         super();
         this.name = "FileError";
         this.file = file;
         this.message = "File error.";
+        this.code = "FILEERROR"
     }
 
     public getFile = (): string => {

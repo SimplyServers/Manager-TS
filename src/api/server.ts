@@ -72,37 +72,35 @@ class APIServer {
 
         //Error handling
         this.express.use(function (err, req, res, next) {
-            console.log("proper error handler fired.");
-            if (err.name === 'ServerActionError') {
+            if (err.code && err.code === 'SERVERERROR') {
                 res.status(500);
-                if (err.showInProd) {
-                    res.json({
-                        "error": true,
-                        "msg": err.message
-                    });
-                } else {
-                    res.status(500);
-                    SSManager.logger.error(err);
-                    res.json({
-                        "error": true,
-                        "msg": "Action failed."
-                    });
-                }
-            } else if (err.name === 'ValidationError') {
+                res.json({
+                    "error": true,
+                    "msg": err.message
+                });
+            } else if (err.code && err.code === 'VALIDATIONERROR') {
                 res.status(400);
                 res.json({
                     "error": true,
                     "msg": "Validation error.",
                     "field": err.field
                 });
-            } else if (err.name === 'FileError') {
+            } else if (err.code && err.code === 'FILEERROR') {
                 res.status(500);
                 res.json({
                     "error": true,
                     "msg": err.message,
                     "file": err.file
                 });
+            } else if(err.code && err.code === 'ENOENT'){
+                res.status(500);
+                res.json({
+                    "error": true,
+                    "msg": "File not found",
+                    "file": err.path
+                });
             } else {
+                console.log(err);
                 SSManager.logger.error(err);
                 res.status(500);
                 res.json({

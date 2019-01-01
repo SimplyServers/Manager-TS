@@ -12,7 +12,8 @@ class Logger{
     };
 
     public verbose = (message: string) => {
-        console.debug("[Verbose] " + message)
+        if (process.env.NODE_ENV === 'dev')
+            console.debug("[Verbose] " + message)
     };
 
     public error = (message: string) => {

@@ -47,6 +47,7 @@ class SSManager {
         SSManager.configsController = new ConfigsController("../storage/");
         SSManager.logger.info("Loading games...");
         await SSManager.configsController.loadGames();
+
         SSManager.logger.info("Loading plugins...");
         await SSManager.configsController.loadPlugins();
 
