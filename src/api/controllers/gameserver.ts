@@ -78,6 +78,25 @@ class ServersController {
         res.json({});
     };
 
+    public removeFolder = async (req, res, next) => {
+        const data = req.body;
+
+        //Validate inputs
+        if (data.path === undefined) {
+            return next(new ValidationError('path'));
+        } else if (!/\S/.test(data.path)) {
+            return next(new ValidationError('path'));
+        }
+
+        try {
+            await req.server.fsHelper.removeFolder(data.path);
+        } catch (e) {
+            return next(e);
+        }
+
+        res.json({});
+    };
+
     public fileContents = async (req, res, next) => {
         const data = req.body;
 

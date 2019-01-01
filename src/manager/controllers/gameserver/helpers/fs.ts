@@ -114,6 +114,18 @@ class FilesystemHelper extends Helper {
         await fs.unlink(filePath);
     };
 
+    public removeFolder = async (partialPath: string) => {
+        if(this.server.isBlocked)
+            throw new ServerActionError("Server is locked. It may be installing or updating.");
+
+        const filePath = this.extendPath(partialPath);
+
+        if (this.checkIfIdentity(filePath))
+            throw new FileError(partialPath);
+
+        await fs.rmdir(filePath);
+    };
+
     /*
     Util
      */

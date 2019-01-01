@@ -147,6 +147,7 @@ class APIServer {
         apiRouter.post('/server/:server/resetPassword', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.resetPassword);
         apiRouter.post('/server/:server/writeFile', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.writeFile);
         apiRouter.post('/server/:server/removeFile', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.removeFile);
+        apiRouter.post('/server/:server/removeFolder', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.removeFolder);
         apiRouter.post('/server/:server/fileContents', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.fileContents);
         apiRouter.post('/server/:server/getDir', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.getDir);
         apiRouter.post('/server/:server/execute', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.execute);
