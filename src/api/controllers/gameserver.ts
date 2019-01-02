@@ -19,6 +19,19 @@ class ServersController {
         res.json({server: req.server.getInfo()})
     };
 
+    public checkAllowed = async (req, res, next) => {
+        const data = req.body;
+
+        //Validate inputs
+        if (data.path === undefined) {
+            return next(new ValidationError('path'));
+        } else if (!/\S/.test(data.path)) {
+            return next(new ValidationError('path'));
+        }
+
+        res.json({allowed: req.server.fsHelper.checkAllowed(data.path) });
+    };
+
     public resetPassword = async (req, res, next) => {
         const data = req.body;
 

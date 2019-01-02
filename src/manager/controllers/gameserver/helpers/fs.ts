@@ -32,8 +32,6 @@ class FilesystemHelper extends Helper {
             if(this.checkBlocked(indFilePath))
                 return;
 
-            const ext = path.extname(indFile);
-
             const stat = await fs.stat(indFilePath);
             fileData.push({
                 name: indFile,
@@ -43,7 +41,7 @@ class FilesystemHelper extends Helper {
                 symlink: stat.isSymbolicLink(),
                 isDir: stat.isDirectory(),
                 isFile: stat.isFile(),
-                edible: stat.isFile() && !(stat.size > 1000000) && !(ext !== ".txt" && ext !== ".properties" && ext !== ".nbt" && ext !== ".yaml" && ext !== ".json" && ext !== ".yml"  && ext !== ".log")
+                edible: stat.isFile() && !(stat.size > 1000000) && this.checkEdible(indFile)
             })
         }));
 
@@ -55,11 +53,11 @@ class FilesystemHelper extends Helper {
             throw new ServerActionError("Server is locked. It may be installing or updating.");
 
         const filePath = this.extendPath(partialPath);
+
         if (this.checkBlocked(filePath))
             throw new FileError(partialPath);
 
-        const ext = path.extname(filePath);
-        if (ext !== ".txt" && ext !== ".properties" && ext !== ".nbt" && ext !== ".yaml" && ext !== ".json" && ext !== ".yml" && ext !== ".log")
+        if (!this.checkEdible(filePath))
             throw new FileError(partialPath);
 
         const stat = await fs.stat(filePath);
@@ -69,31 +67,14 @@ class FilesystemHelper extends Helper {
         return await fs.readFile(filePath, "utf8");
     };
 
-    public ensureFile = async (partialPath: string) => {
-        const filePath = this.extendPath(partialPath);
-
-        if (this.checkBlocked(filePath))
-            throw new FileError(partialPath);
-
-        await fs.ensureFile(filePath);
-        await fs.chown(filePath, userid.uid(this.server.id), userid.gid(this.server.id));
-    };
-
-    public truncateFile = async (partialPath: string) => {
-        const filePath = this.extendPath(partialPath);
-
-        if (this.checkBlocked(filePath))
-            throw new FileError(partialPath);
-
-        await fs.truncate(filePath, 0);
-        await fs.chown(filePath, userid.uid(this.server.id), userid.gid(this.server.id));
-    };
-
     public writeFile = async (partialPath: string, contents: string) => {
         if(this.server.isBlocked)
             throw new ServerActionError("Server is locked. It may be installing or updating.");
 
         const filePath = this.extendPath(partialPath);
+
+        if (!this.checkEdible(filePath))
+            throw new FileError(partialPath);
 
         if (this.checkBlocked(filePath))
             throw new FileError(partialPath);
@@ -111,6 +92,9 @@ class FilesystemHelper extends Helper {
         if (this.checkBlocked(filePath))
             throw new FileError(partialPath);
 
+        if (!this.checkEdible(filePath))
+            throw new FileError(partialPath);
+
         await fs.unlink(filePath);
     };
 
@@ -126,9 +110,37 @@ class FilesystemHelper extends Helper {
         await fs.rmdir(filePath);
     };
 
+    public checkAllowed = (potentialFile: string): boolean => {
+      return this.checkBlocked(potentialFile) || this.checkEdible(potentialFile);
+    };
+
     /*
     Util
      */
+
+    //This is not effected by checkEdible() or checkBlocked() because its used internally only.
+    public ensureFile = async (partialPath: string) => {
+        const filePath = this.extendPath(partialPath);
+
+        await fs.ensureFile(filePath);
+        await fs.chown(filePath, userid.uid(this.server.id), userid.gid(this.server.id));
+    };
+
+    //Same with truncate
+    public truncateFile = async (partialPath: string) => {
+        const filePath = this.extendPath(partialPath);
+
+        await fs.truncate(filePath, 0);
+        await fs.chown(filePath, userid.uid(this.server.id), userid.gid(this.server.id));
+    };
+
+    //Check if the file follows file extension guidelines
+    public checkEdible = (fullPath: string): boolean => {
+        const ext = path.extname(fullPath);
+        return (ext === ".txt" || ext === ".properties" || ext === ".nbt" || ext === ".yaml" || ext === ".json" || ext === ".yml" || ext === ".log");
+    };
+
+    //Check if the file is either the logging file or the identity.json file
     public checkBlocked = (fullPath): boolean => {
         //return fullPath === path.join("/home", this.server.id, "/public/identity.json")
         if(fullPath === path.join("/home", this.server.id, "/public/identity.json")) return true;
