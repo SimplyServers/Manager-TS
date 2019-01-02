@@ -315,7 +315,7 @@ class Gameserver extends EventEmitter {
         this.setBlocked(false);
     };
 
-    public stop = async () => {
+    public stop = () => {
         if (this.status !== Status.Running)
             throw new ServerActionError("Server is not running.");
         this.dockerHelper.writeToProcess(this.currentGame.stopConsoleCommand);

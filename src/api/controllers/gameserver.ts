@@ -162,7 +162,7 @@ class ServersController {
                     await req.server.start();
                     break;
                 case 'off':
-                    await req.server.stop();
+                    req.server.stop();
                     break;
                 case 'kill':
                     await req.server.forceKill();

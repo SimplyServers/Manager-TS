@@ -21,7 +21,7 @@ class FilesystemHelper extends Helper {
             throw new ServerActionError("Server is locked. It may be installing or updating.");
 
         const filePath = this.extendPath(partialPath);
-        if (this.checkIfIdentity(filePath))
+        if (this.checkBlocked(filePath))
             throw new FileError(partialPath);
 
         const fileList = await fs.readdir(filePath);
@@ -29,7 +29,7 @@ class FilesystemHelper extends Helper {
         let fileData = [];
         await Promise.all(fileList.map(async (indFile) => {
             const indFilePath = path.join(filePath, indFile);
-            if(this.checkIfIdentity(indFilePath))
+            if(this.checkBlocked(indFilePath))
                 return;
 
             const ext = path.extname(indFile);
@@ -55,7 +55,7 @@ class FilesystemHelper extends Helper {
             throw new ServerActionError("Server is locked. It may be installing or updating.");
 
         const filePath = this.extendPath(partialPath);
-        if (this.checkIfIdentity(filePath))
+        if (this.checkBlocked(filePath))
             throw new FileError(partialPath);
 
         const ext = path.extname(filePath);
@@ -72,7 +72,7 @@ class FilesystemHelper extends Helper {
     public ensureFile = async (partialPath: string) => {
         const filePath = this.extendPath(partialPath);
 
-        if (this.checkIfIdentity(filePath))
+        if (this.checkBlocked(filePath))
             throw new FileError(partialPath);
 
         await fs.ensureFile(filePath);
@@ -82,7 +82,7 @@ class FilesystemHelper extends Helper {
     public truncateFile = async (partialPath: string) => {
         const filePath = this.extendPath(partialPath);
 
-        if (this.checkIfIdentity(filePath))
+        if (this.checkBlocked(filePath))
             throw new FileError(partialPath);
 
         await fs.truncate(filePath, 0);
@@ -95,7 +95,7 @@ class FilesystemHelper extends Helper {
 
         const filePath = this.extendPath(partialPath);
 
-        if (this.checkIfIdentity(filePath))
+        if (this.checkBlocked(filePath))
             throw new FileError(partialPath);
 
         await fs.outputFile(filePath, contents);
@@ -108,7 +108,7 @@ class FilesystemHelper extends Helper {
 
         const filePath = this.extendPath(partialPath);
 
-        if (this.checkIfIdentity(filePath))
+        if (this.checkBlocked(filePath))
             throw new FileError(partialPath);
 
         await fs.unlink(filePath);
@@ -120,7 +120,7 @@ class FilesystemHelper extends Helper {
 
         const filePath = this.extendPath(partialPath);
 
-        if (this.checkIfIdentity(filePath))
+        if (this.checkBlocked(filePath))
             throw new FileError(partialPath);
 
         await fs.rmdir(filePath);
@@ -129,8 +129,10 @@ class FilesystemHelper extends Helper {
     /*
     Util
      */
-    public checkIfIdentity = (fullPath): boolean => {
-        return fullPath === path.join("/home", this.server.id, "/public/identity.json")
+    public checkBlocked = (fullPath): boolean => {
+        //return fullPath === path.join("/home", this.server.id, "/public/identity.json")
+        if(fullPath === path.join("/home", this.server.id, "/public/identity.json")) return true;
+        return this.server.currentGame.logging.logFile.useLogFile && fullPath === path.join("/home", this.server.id, "/public", this.server.currentGame.logging.logFile.path);
     };
 
     public getRoot = (): string => {

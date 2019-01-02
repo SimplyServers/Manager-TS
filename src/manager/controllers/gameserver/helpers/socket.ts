@@ -81,8 +81,9 @@ class SocketHelper extends Helper {
                     return;
                 }
                 let filePath = this.server.fsHelper.extendPath(data.path);
-
-                if (filePath === "/home/" + this.server.id + "/public/identity.json") {
+                if(this.server.fsHelper.checkBlocked(filePath)){
+                    socket.emit('fail', 'Restricted file target');
+                    socket.disconnect();
                     return;
                 }
 
@@ -90,16 +91,20 @@ class SocketHelper extends Helper {
                     if (err) {
                         socket.emit('fail', 'File does not exist.');
                         socket.disconnect();
+                        return;
                     }
+
                     if (stat.isDirectory()) { //This is a dir ;/
                         socket.emit('fail', 'Must be a file');
                         socket.disconnect();
+                        return;
+
                     } else if (!stat.isFile()) { //Lol wtf would this be?
                         socket.emit('fail', 'Must be a file');
                         socket.disconnect();
+                        return;
                     }
 
-                    console.log("piping...");
                     fs.createReadStream(filePath).pipe(stream);
 
                     stream.on('close', () => {
@@ -124,26 +129,17 @@ class SocketHelper extends Helper {
                 }
                 //Check to make sure the target isn't an existing folder
                 let filePath = this.server.fsHelper.extendPath(path.join(data.path, data.name)); //Almost forgot to extend the path after we joined hehe.
-                fs.stat(filePath).then(() => {
+                if(this.server.fsHelper.checkBlocked(filePath)){
+                    socket.emit('fail', 'Restricted file target');
+                    socket.disconnect();
+                    return;
+                }
 
-                    if (filePath === "/home/" + this.server.id + "/public/identity.json") {
-                        socket.emit('fail', 'Restricted file target');
-                        socket.disconnect();
-                    }
-
-                    stream.pipe(fs.createWriteStream(filePath));
-                    fs.chown(filePath, userid.uid(this.server.id), userid.gid(this.server.id), () => {
-                        //Tell the manager we're done and disconnect
-                        socket.emit('status', 'done');
-                        socket.disconnect();
-                    });
-                }).catch(() => {
-                    stream.pipe(fs.createWriteStream(filePath));
-                    fs.chown(filePath, userid.uid(this.server.id), userid.gid(this.server.id), () => {
-                        //Tell the manager we're done and disconnect
-                        socket.emit('status', 'done');
-                        socket.disconnect();
-                    });
+                stream.pipe(fs.createWriteStream(filePath));
+                fs.chown(filePath, userid.uid(this.server.id), userid.gid(this.server.id), () => {
+                    //Tell the manager we're done and disconnect
+                    socket.emit('status', 'done');
+                    socket.disconnect();
                 });
             });
 
