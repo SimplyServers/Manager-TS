@@ -1,9 +1,9 @@
 import {Gameserver} from "../gameserver";
 
-class Helper{
+class Helper {
     protected readonly server: Gameserver;
 
-    constructor(server: Gameserver){
+    constructor(server: Gameserver) {
         this.server = server;
     }
 }

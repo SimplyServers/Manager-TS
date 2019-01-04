@@ -1,9 +1,9 @@
-export class ValidationError extends Error{
+export class ValidationError extends Error {
 
     private readonly field: string;
     private readonly code: string;
 
-    constructor(field){
+    constructor(field) {
         super();
         this.name = "ValidationError";
         this.field = field;

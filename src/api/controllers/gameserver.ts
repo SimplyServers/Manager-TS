@@ -9,10 +9,10 @@ class ServersController {
         const serverList = [];
 
         SSManager.serverController.servers.map(server => {
-           serverList.push(server.getInfo());
+            serverList.push(server.getInfo());
         });
 
-        res.json({servers: serverList })
+        res.json({servers: serverList})
     };
 
     public getServer = async (req, res, next) => {
@@ -29,7 +29,7 @@ class ServersController {
             return next(new ValidationError('path'));
         }
 
-        res.json({allowed: req.server.fsHelper.checkAllowed(data.path) });
+        res.json({allowed: req.server.fsHelper.checkAllowed(data.path)});
     };
 
     public resetPassword = async (req, res, next) => {
@@ -286,7 +286,7 @@ class ServersController {
             return next(e);
         }
 
-        if(!removed)
+        if (!removed)
             return next(new ValidationError("server"));
 
         res.json({});
@@ -367,9 +367,9 @@ class ServersController {
 
         //Verify players
         let players = config.players;
-        try{
+        try {
             players = Number.parseInt(players);
-        }catch (e) {
+        } catch (e) {
             return next(new ValidationError("config"));
         }
 
@@ -425,7 +425,7 @@ class ServersController {
         config.game = gameJson;
 
         //Check to make sure the server doesn't already exist.
-        if(SSManager.serverController.servers.find(server => server.id === config.id) !== undefined)
+        if (SSManager.serverController.servers.find(server => server.id === config.id) !== undefined)
             return next(new ServerActionError("Server already exists."));
 
         config.installed = false; //Server has not been installed

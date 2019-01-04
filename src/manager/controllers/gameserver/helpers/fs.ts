@@ -17,7 +17,7 @@ class FilesystemHelper extends Helper {
     File functions
      */
     public getDir = async (partialPath: string) => {
-        if(this.server.isBlocked)
+        if (this.server.isBlocked)
             throw new ServerActionError("Server is locked. It may be installing or updating.");
 
         const filePath = this.extendPath(partialPath);
@@ -29,7 +29,7 @@ class FilesystemHelper extends Helper {
         let fileData = [];
         await Promise.all(fileList.map(async (indFile) => {
             const indFilePath = path.join(filePath, indFile);
-            if(this.checkBlocked(indFilePath))
+            if (this.checkBlocked(indFilePath))
                 return;
 
             const stat = await fs.stat(indFilePath);
@@ -49,7 +49,7 @@ class FilesystemHelper extends Helper {
     };
 
     public getFileContents = async (partialPath: string) => {
-        if(this.server.isBlocked)
+        if (this.server.isBlocked)
             throw new ServerActionError("Server is locked. It may be installing or updating.");
 
         const filePath = this.extendPath(partialPath);
@@ -68,7 +68,7 @@ class FilesystemHelper extends Helper {
     };
 
     public writeFile = async (partialPath: string, contents: string) => {
-        if(this.server.isBlocked)
+        if (this.server.isBlocked)
             throw new ServerActionError("Server is locked. It may be installing or updating.");
 
         const filePath = this.extendPath(partialPath);
@@ -84,7 +84,7 @@ class FilesystemHelper extends Helper {
     };
 
     public removeFile = async (partialPath: string) => {
-        if(this.server.isBlocked)
+        if (this.server.isBlocked)
             throw new ServerActionError("Server is locked. It may be installing or updating.");
 
         const filePath = this.extendPath(partialPath);
@@ -99,7 +99,7 @@ class FilesystemHelper extends Helper {
     };
 
     public removeFolder = async (partialPath: string) => {
-        if(this.server.isBlocked)
+        if (this.server.isBlocked)
             throw new ServerActionError("Server is locked. It may be installing or updating.");
 
         const filePath = this.extendPath(partialPath);
@@ -111,7 +111,7 @@ class FilesystemHelper extends Helper {
     };
 
     public checkAllowed = (potentialFile: string): boolean => {
-      return this.checkBlocked(potentialFile) || this.checkEdible(potentialFile);
+        return this.checkBlocked(potentialFile) || this.checkEdible(potentialFile);
     };
 
     /*
@@ -143,7 +143,7 @@ class FilesystemHelper extends Helper {
     //Check if the file is either the logging file or the identity.json file
     public checkBlocked = (fullPath): boolean => {
         //return fullPath === path.join("/home", this.server.id, "/public/identity.json")
-        if(fullPath === path.join("/home", this.server.id, "/public/identity.json")) return true;
+        if (fullPath === path.join("/home", this.server.id, "/public/identity.json")) return true;
         return this.server.currentGame.logging.logFile.useLogFile && fullPath === path.join("/home", this.server.id, "/public", this.server.currentGame.logging.logFile.path);
     };
 

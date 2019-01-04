@@ -1,9 +1,9 @@
-export class FileError extends Error{
+export class FileError extends Error {
 
     private readonly file: string;
     private readonly code: string;
 
-    constructor(file){
+    constructor(file) {
         super();
         this.name = "FileError";
         this.file = file;

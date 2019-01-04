@@ -4,8 +4,6 @@ import * as bodyParser from "body-parser";
 import * as https from "https";
 
 import {SSManager} from "../ssmanager";
-import {ConfigsController} from "../manager/controllers/configs/configManager";
-import {GameserverController} from "../manager/controllers/gameserver/gameserverManager";
 import {AuthMiddleware} from "./middleware/auth";
 import {ServerMiddleware} from "./middleware/server";
 import {GamesController} from "./controllers/games";
@@ -92,7 +90,7 @@ class APIServer {
                     "msg": err.message,
                     "file": err.file
                 });
-            } else if(err.code && err.code === 'ENOENT'){
+            } else if (err.code && err.code === 'ENOENT') {
                 res.status(500);
                 res.json({
                     "error": true,
@@ -113,7 +111,7 @@ class APIServer {
         await this.createHttp();
     };
 
-    private createHttp = async ()  => {
+    private createHttp = async () => {
         SSManager.logger.verbose("HTTP server hosted on :" + SSManager.config.api.port);
 
         this.http = https.createServer(await this.certManager.getOptions(), this.express);
@@ -165,4 +163,4 @@ class APIServer {
     };
 }
 
-export { APIServer }
+export {APIServer}

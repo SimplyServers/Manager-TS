@@ -4,7 +4,7 @@ import {SSManager} from "../../../ssmanager";
 import {Gameserver} from "./gameserver";
 import {IServer} from "../configs/serverConfig";
 
-class GameserverController{
+class GameserverController {
     public servers: Array<Gameserver>;
 
     private readonly dataFolder: string;
@@ -40,7 +40,7 @@ class GameserverController{
     public removeServer = async (targetServer: Gameserver) => {
         let removed = false;
         await Promise.all(this.servers.map(async (server, index) => {
-            if(server === targetServer){
+            if (server === targetServer) {
                 removed = true;
                 await targetServer.remove();
                 this.servers.splice(index, 1);
@@ -50,4 +50,4 @@ class GameserverController{
     }
 }
 
-export { GameserverController }
+export {GameserverController}

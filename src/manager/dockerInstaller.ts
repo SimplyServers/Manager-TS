@@ -5,7 +5,7 @@ import * as path from "path";
 
 import {SSManager} from "../ssmanager";
 
-class DockerInstaller{
+class DockerInstaller {
 
     private readonly dockerContoller;
 
@@ -17,7 +17,7 @@ class DockerInstaller{
     }
 
     public bootstrap = async () => {
-        if(!(await DockerodeUtils.imageExists(this.dockerContoller, "ssjava"))){
+        if (!(await DockerodeUtils.imageExists(this.dockerContoller, "ssjava"))) {
             await this.addImage(path.join(SSManager.getRoot(), "../dockerfiles/java/"), "ssjava");
         }
     };
@@ -30,10 +30,10 @@ class DockerInstaller{
                 context: path,
                 src: ['Dockerfile']
             }, {t: name}, (err, stream) => {
-                if(err) return reject(err);
+                if (err) return reject(err);
 
                 //Pipe the stream to its doom!
-                stream.pipe(devNull(), { end: true });
+                stream.pipe(devNull(), {end: true});
 
                 //Return when its done installing
                 stream.on('end', () => {
@@ -44,4 +44,4 @@ class DockerInstaller{
     }
 }
 
-export { DockerInstaller }
+export {DockerInstaller}

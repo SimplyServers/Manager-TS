@@ -1,9 +1,9 @@
-class Logger{
+class Logger {
 
     //TODO: implement fs logging
     private readonly logToFile;
 
-    constructor(logToFile: boolean){
+    constructor(logToFile: boolean) {
         this.logToFile = logToFile;
     }
 

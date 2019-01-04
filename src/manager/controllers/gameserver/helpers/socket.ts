@@ -19,7 +19,7 @@ class SocketHelper extends Helper {
     }
 
     private onStatusChange = (data) => {
-      this.websocket.emit('statusUpdate', data);
+        this.websocket.emit('statusUpdate', data);
     };
 
     private onAnnouncement = (data) => {
@@ -81,7 +81,7 @@ class SocketHelper extends Helper {
                     return;
                 }
                 let filePath = this.server.fsHelper.extendPath(data.path);
-                if(this.server.fsHelper.checkBlocked(filePath)){
+                if (this.server.fsHelper.checkBlocked(filePath)) {
                     socket.emit('fail', 'Restricted file target');
                     socket.disconnect();
                     return;
@@ -129,7 +129,7 @@ class SocketHelper extends Helper {
                 }
                 //Check to make sure the target isn't an existing folder
                 let filePath = this.server.fsHelper.extendPath(path.join(data.path, data.name)); //Almost forgot to extend the path after we joined hehe.
-                if(this.server.fsHelper.checkBlocked(filePath)){
+                if (this.server.fsHelper.checkBlocked(filePath)) {
                     socket.emit('fail', 'Restricted file target');
                     socket.disconnect();
                     return;

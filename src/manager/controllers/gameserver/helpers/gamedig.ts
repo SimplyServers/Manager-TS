@@ -25,7 +25,7 @@ class GamedigHelper extends Helper {
     public stop = () => {
         this.failedPings = 0;
         this.enabled = false;
-        if(this.pingerInterval)
+        if (this.pingerInterval)
             clearInterval(this.pingerInterval);
     };
 

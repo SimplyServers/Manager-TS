@@ -1,9 +1,9 @@
 import {SSManager} from "../../ssmanager";
 
-class GamesController{
+class GamesController {
     public getGames = async (req, res, next) => {
-      res.json({games: SSManager.configsController.games});
+        res.json({games: SSManager.configsController.games});
     };
 }
 
-export { GamesController }
+export {GamesController}
