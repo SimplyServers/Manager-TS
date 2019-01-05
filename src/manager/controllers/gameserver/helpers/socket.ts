@@ -18,36 +18,11 @@ class SocketHelper extends Helper {
         this.bootstrapSocket();
     }
 
-    private onStatusChange = (data) => {
-        this.websocket.emit('statusUpdate', data);
-    };
-
-    private onAnnouncement = (data) => {
-        this.websocket.emit('announcement', data);
-    };
-
-    private onBlock = (data) => {
-        this.websocket.emit('block', data);
-    };
-
-    private onInstalled = (data) => {
-        this.websocket.emit('installed', data);
-    };
-
-    private onConsole = (data) => {
-        data = data.toString();
-        if ((data.replace(/\s+/g, '')).length > 1) {
-            this.websocket.emit('console', {
-                'line': data.replace(/\r\n/g, '') + '\n'
-            });
-        }
-    };
-
     private bootstrapSocket = () => {
         //Auth middleware
         this.setupAuth();
 
-        this.websocket.on('connection', socket => {
+        this.websocket.on('connect', socket => {
             SSManager.logger.verbose("[Server " + this.server.id + " ] Got socket connection.");
             this.websocket.emit('initialStatus', {
                 status: this.server.status,
@@ -55,11 +30,36 @@ class SocketHelper extends Helper {
                 blocked: this.server.isBlocked
             });
 
-            this.server.on('statusChange', this.onStatusChange);
-            this.server.on('announcement', this.onAnnouncement);
-            this.server.on('block', this.onBlock);
-            this.server.on('installed', this.onInstalled);
-            this.server.on('console', this.onConsole);
+            const onStatusChange = (data) => {
+                socket.emit('statusUpdate', data);
+            };
+
+            const onAnnouncement = (data) => {
+                socket.emit('announcement', data);
+            };
+
+            const onBlock = (data) => {
+                socket.emit('block', data);
+            };
+
+            const onInstalled = (data) => {
+                socket.emit('installed', data);
+            };
+
+            const onConsole = (data) => {
+                data = data.toString();
+                if ((data.replace(/\s+/g, '')).length > 1) {
+                    socket.emit('console', {
+                        'line': data.replace(/\r\n/g, '') + '\n'
+                    });
+                }
+            };
+
+            this.server.on('statusChange', onStatusChange);
+            this.server.on('announcement', onAnnouncement);
+            this.server.on('block', onBlock);
+            this.server.on('installed', onInstalled);
+            this.server.on('console', onConsole);
 
             socket.on('getStatus', () => {
                 socket.emit('statusUpdate', this.server.status);
@@ -67,11 +67,11 @@ class SocketHelper extends Helper {
 
             socket.on('disconnect', () => {
                 //Remove listeners when we're all done
-                this.server.removeListener('statusChange', this.onStatusChange);
-                this.server.removeListener('announcement', this.onAnnouncement);
-                this.server.removeListener('block', this.onBlock);
-                this.server.removeListener('installed', this.onInstalled);
-                this.server.removeListener('console', this.onConsole);
+                this.server.removeListener('statusChange', onStatusChange);
+                this.server.removeListener('announcement', onAnnouncement);
+                this.server.removeListener('block', onBlock);
+                this.server.removeListener('installed', onInstalled);
+                this.server.removeListener('console', onConsole);
                 SSManager.logger.verbose("[Server " + this.server.id + " ] Socket disconnect");
             });
 
