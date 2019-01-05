@@ -50,7 +50,7 @@ class GamedigHelper extends Helper {
                 if (this.server.status !== Status.Off)
                     this.server.killContainer().then(() => {
                         this.failedPings = 0;
-                        this.server.logAnnounce("Your server has been killed due to a detected crash.")
+                        this.server.logAnnounce("Your server has been killed due to the server not responding.")
                     });
             } else {
                 this.failedPings++;
