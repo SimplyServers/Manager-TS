@@ -111,7 +111,7 @@ class FilesystemHelper extends Helper {
     };
 
     public checkAllowed = (potentialFile: string): boolean => {
-        return this.checkBlocked(potentialFile) || this.checkEdible(potentialFile);
+        return this.checkBlocked(potentialFile) && this.checkEdible(potentialFile);
     };
 
     /*
