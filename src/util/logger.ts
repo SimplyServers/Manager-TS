@@ -1,6 +1,7 @@
 import {SSManager} from "../ssmanager";
 import * as path from 'path';
 import * as winston from 'winston';
+import {transports} from "winston";
 
 class Logger {
 
@@ -29,11 +30,20 @@ class Logger {
             },
         };
 
-        this.logger = winston.createLogger({
-            transports: [
+        let loggerTransports;
+        if(logToFile){
+            loggerTransports =  [
                 new winston.transports.File(options.file),
                 new winston.transports.Console(options.console)
-            ],
+            ];
+        }else{
+            loggerTransports =  [
+                new winston.transports.Console(options.console)
+            ];
+        }
+
+        this.logger = winston.createLogger({
+            transports: loggerTransports,
             exitOnError: false
         })
     }
