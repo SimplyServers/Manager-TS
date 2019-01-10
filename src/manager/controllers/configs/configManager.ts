@@ -4,7 +4,7 @@ import {SSManager} from "../../../ssmanager";
 import {IGame} from "./gameConfig";
 import {IPlugin} from "./pluginConfig";
 
-class ConfigsController {
+export class ConfigsController {
     public games: Array<IGame>;
     public plugins: Array<IPlugin>;
 
@@ -14,13 +14,11 @@ class ConfigsController {
         this.dataFolder = dataFolder;
     }
 
-    public loadGames = async () => {
+    public loadGames = async (): Promise<void> => {
         this.games = await SSUtil.dirToJson(path.join(SSManager.getRoot(), this.dataFolder, "/games/"));
     };
 
-    public loadPlugins = async () => {
+    public loadPlugins = async (): Promise<void> => {
         this.plugins = await SSUtil.dirToJson(path.join(SSManager.getRoot(), this.dataFolder, "/plugins/"));
     };
 }
-
-export { ConfigsController };

@@ -1,7 +1,7 @@
 import * as diskspace from "diskspace";
 import * as osUtils from "os-utils";
 
-class NodeController {
+export class NodeController {
     public getStatus = async (req, res, next) => {
         osUtils.cpuUsage(function (cpu) {
             diskspace.check('/', function (err, disk) {
@@ -28,5 +28,3 @@ class NodeController {
         });
     };
 }
-
-export {NodeController}

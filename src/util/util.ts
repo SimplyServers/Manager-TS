@@ -2,7 +2,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import {SSManager} from "../ssmanager";
 
-export const dirToJson = async (dataFolder: string) => {
+export const dirToJson = async (dataFolder: string): Promise<any> => {
     //Get all files in a directory
     const filesList = await fs.readdir(dataFolder);
 

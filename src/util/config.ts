@@ -1,4 +1,4 @@
-interface IConfig {
+export interface IConfig {
     "servers": {
         "pingTime": number,
         "maxPort": number,
@@ -13,5 +13,3 @@ interface IConfig {
         "maxFileSize": number
     }
 }
-
-export {IConfig}

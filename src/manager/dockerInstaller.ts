@@ -16,13 +16,13 @@ class DockerInstaller {
         });
     }
 
-    public bootstrap = async () => {
+    public bootstrap = async (): Promise<void> => {
         if (!(await DockerodeUtils.imageExists(this.dockerContoller, "ssjava"))) {
             await this.addImage(path.join(SSManager.getRoot(), "../dockerfiles/java/"), "ssjava");
         }
     };
 
-    private addImage = async (path: string, name: string) => {
+    private addImage = async (path: string, name: string): Promise<void> => {
         SSManager.logger.verbose("Adding Docker image for " + name);
 
         await new Promise((resolve, reject) => {

@@ -1,4 +1,4 @@
-interface IGame {
+export interface IGame {
     name: string,
     gamedig: {
         active: boolean,
@@ -18,5 +18,3 @@ interface IGame {
     },
     verify: any
 }
-
-export {IGame}

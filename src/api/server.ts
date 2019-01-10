@@ -12,8 +12,9 @@ import {PluginsController} from "./controllers/plugins";
 import {ServersController} from "./controllers/gameserver";
 import {LoadedMiddleware} from "./middleware/loaded";
 import {CertManager} from "./certManager";
+import {Gameserver} from "../manager/controllers/gameserver/gameserver";
 
-class APIServer {
+export class APIServer {
     public express;
     public http;
     public io;
@@ -32,7 +33,7 @@ class APIServer {
         this.certManager = new CertManager();
     }
 
-    public bootstrapExpress = async () => {
+    public bootstrapExpress = async (): Promise<void> => {
         //Make sure certs are installed
         await this.certManager.ensureCerts();
 
@@ -111,7 +112,7 @@ class APIServer {
         await this.createHttp();
     };
 
-    private createHttp = async () => {
+    private createHttp = async (): Promise<void> => {
         SSManager.logger.verbose("HTTP server hosted on :" + SSManager.config.api.port);
 
         this.http = https.createServer(await this.certManager.getOptions(), this.express);
@@ -162,5 +163,3 @@ class APIServer {
         this.express.use('', apiRouter);
     };
 }
-
-export {APIServer}

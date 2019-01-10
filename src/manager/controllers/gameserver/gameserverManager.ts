@@ -4,7 +4,7 @@ import {SSManager} from "../../../ssmanager";
 import {Gameserver} from "./gameserver";
 import {IServer} from "../configs/serverConfig";
 
-class GameserverController {
+export class GameserverController {
     public servers: Array<Gameserver>;
 
     private readonly dataFolder: string;
@@ -15,14 +15,14 @@ class GameserverController {
         this.servers = [];
     }
 
-    public loadServers = async () => {
+    public loadServers = async (): Promise<void> => {
         const serversJSON = await SSUtil.dirToJson(path.join(SSManager.getRoot(), this.dataFolder, "/servers/"));
         serversJSON.map(server => {
             this.servers.push(new Gameserver(server));
         })
     };
 
-    public getNiceConfigs = () => {
+    public getNiceConfigs = (): object => {
         let niceConfigs = [];
         this.servers.map(server => {
             niceConfigs.push(server.getInfo());
@@ -30,14 +30,14 @@ class GameserverController {
         return niceConfigs;
     };
 
-    public addNewServer = async (jsonData: IServer) => {
+    public addNewServer = async (jsonData: IServer): Promise<Gameserver> => {
         const newServer = new Gameserver(jsonData);
         this.servers.push(newServer);
         await newServer.updateConfig();
         return newServer;
     };
 
-    public removeServer = async (targetServer: Gameserver) => {
+    public removeServer = async (targetServer: Gameserver): Promise<boolean> => {
         let removed = false;
         await Promise.all(this.servers.map(async (server, index) => {
             if (server === targetServer) {
@@ -49,5 +49,3 @@ class GameserverController {
         return removed;
     }
 }
-
-export {GameserverController}

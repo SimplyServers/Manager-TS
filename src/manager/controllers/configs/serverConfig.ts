@@ -1,6 +1,6 @@
 import {IGame} from "./gameConfig";
 
-interface IServer {
+export interface IServer {
     game: IGame,
     id: string,
     port: number,
@@ -13,5 +13,3 @@ interface IServer {
     installed: boolean,
     players: number
 }
-
-export { IServer }

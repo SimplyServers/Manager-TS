@@ -1,17 +1,13 @@
 import {SSManager} from "../ssmanager";
 import * as path from 'path';
 import * as winston from 'winston';
-import {transports} from "winston";
 
-class Logger {
+export class Logger {
 
     //TODO: implement fs logging
-    private readonly logToFile;
     private logger;
 
     constructor(logToFile: boolean) {
-        this.logToFile = logToFile;
-
         const options = {
             file: {
                 level: 'info',
@@ -48,18 +44,16 @@ class Logger {
         })
     }
 
-    public info = (message: string) => {
+    public info = (message: string): void => {
         this.logger.info("[Info] " + message)
     };
 
-    public verbose = (message: string) => {
+    public verbose = (message: string): void => {
         this.logger.debug("[Verbose] " + message)
     };
 
-    public error = (message: string) => {
+    public error = (message: string): void => {
         this.logger.error("[Verbose] " + message)
     };
 
 }
-
-export {Logger}

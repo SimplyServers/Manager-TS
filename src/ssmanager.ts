@@ -7,7 +7,7 @@ import {GameserverController} from "./manager/controllers/gameserver/gameserverM
 import {APIServer} from "./api/server";
 import {DockerInstaller} from "./manager/dockerInstaller";
 
-class SSManager {
+export class SSManager {
     static config: IConfig;
     static logger: Logger;
     static loaded: boolean;
@@ -32,7 +32,7 @@ class SSManager {
         })
     }
 
-    private bootstrap = async () => {
+    private bootstrap = async (): Promise<void> => {
         //Bootstrap docker
         const dockerInstaller = new DockerInstaller();
         SSManager.logger.info("Checking Docker images...");
@@ -61,5 +61,3 @@ class SSManager {
         return __dirname;
     }
 }
-
-export {SSManager}

@@ -4,7 +4,7 @@ import {SSManager} from "../../ssmanager";
 
 import * as async from "async";
 
-class ServersController {
+export class ServersController {
     public getGameservers = async (req, res, next) => {
         const serverList = [];
 
@@ -445,5 +445,3 @@ class ServersController {
         });
     }
 }
-
-export {ServersController}

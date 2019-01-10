@@ -1,5 +1,10 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
+# SS
+app.log
+config.json
+dist.zip
+
 # compiled output
 /dist
 /tmp
@@ -10,6 +15,7 @@
 
 # IDEs and editors
 /.idea
+.idea
 .project
 .classpath
 .c9/
