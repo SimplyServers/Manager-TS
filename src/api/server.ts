@@ -1,18 +1,18 @@
-import * as express from 'express'
-import * as SocketIO from 'socket.io';
 import * as bodyParser from "body-parser";
+import * as express from 'express'
 import * as https from "https";
+import * as SocketIO from 'socket.io';
 
+import {Gameserver} from "../manager/controllers/gameserver/gameserver";
 import {SSManager} from "../ssmanager";
-import {AuthMiddleware} from "./middleware/auth";
-import {ServerMiddleware} from "./middleware/server";
+import {CertManager} from "./certManager";
 import {GamesController} from "./controllers/games";
+import {ServersController} from "./controllers/gameserver";
 import {NodeController} from "./controllers/node";
 import {PluginsController} from "./controllers/plugins";
-import {ServersController} from "./controllers/gameserver";
+import {AuthMiddleware} from "./middleware/auth";
 import {LoadedMiddleware} from "./middleware/loaded";
-import {CertManager} from "./certManager";
-import {Gameserver} from "../manager/controllers/gameserver/gameserver";
+import {ServerMiddleware} from "./middleware/server";
 
 export class APIServer {
     public express;
@@ -34,10 +34,10 @@ export class APIServer {
     }
 
     public bootstrapExpress = async (): Promise<void> => {
-        //Make sure certs are installed
+        // Make sure certs are installed
         await this.certManager.ensureCerts();
 
-        //CORS
+        // CORS
         this.express.disable('x-powered-by');
         this.express.use((req, res, next) => {
             res.header("Access-Control-Allow-Origin", "*");
@@ -53,23 +53,23 @@ export class APIServer {
             next();
         });
 
-        //Body Parser
-        this.express.use(bodyParser.urlencoded({extended: false})); //Allow Express to handle json in bodies
+        // Body Parser
+        this.express.use(bodyParser.urlencoded({extended: false})); // Allow Express to handle json in bodies
         this.express.use(bodyParser.json()); //                                ^
 
-        //Basic home page
+        // Basic home page
         this.express.get('/', function (req, res) {
             res.set('location', 'https://simplyservers.io');
             res.status(301).send()
         });
 
-        //Global middleware
+        // Global middleware
         const mustBeLoaded = new LoadedMiddleware();
         this.express.use(mustBeLoaded.mustBeLoaded);
 
         this.mountRoutes();
 
-        //Error handling
+        // Error handling
         this.express.use(function (err, req, res, next) {
             if (err.code && err.code === 'SERVERERROR') {
                 res.status(500);
@@ -125,19 +125,19 @@ export class APIServer {
     private mountRoutes = (): void => {
         const apiRouter = require('express').Router();
 
-        //games.ts
+        // games.ts
         const gamesController = new GamesController();
         apiRouter.get('/game/', [this.authMiddleware.authRequired], gamesController.getGames);
 
-        //plugins.ts
+        // plugins.ts
         const pluginsController = new PluginsController();
         apiRouter.get('/plugin/', [this.authMiddleware.authRequired], pluginsController.getPlugins);
 
-        //node.ts
+        // node.ts
         const nodeController = new NodeController();
         apiRouter.get('/node/', [this.authMiddleware.authRequired], nodeController.getStatus);
 
-        //gameserver.ts
+        // gameserver.ts
         const gameserverController = new ServersController();
         apiRouter.get('/server/', [this.authMiddleware.authRequired], gameserverController.getGameservers);
         apiRouter.get('/server/:server', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.getServer);

@@ -1,8 +1,8 @@
+import * as proc from "child_process";
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import {SSManager} from "../ssmanager";
-import * as proc from "child_process";
 import * as util from "util";
+import {SSManager} from "../ssmanager";
 
 export class CertManager {
     public ensureCerts = async (): Promise<void> => {
@@ -26,8 +26,8 @@ export class CertManager {
     private generateCerts = async (): Promise<void> => {
         await new Promise((resolve, reject) => {
             proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/generateSsl.sh") + " %s", SSManager.config.api.addr), {cwd: path.join(SSManager.getRoot(), "../certs/")}, (err) => {
-                if (err) return reject(err);
-                else return resolve();
+                if (err) { return reject(err); }
+                else { return resolve(); }
             });
         });
     };

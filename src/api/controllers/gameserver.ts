@@ -1,6 +1,6 @@
-import {ValidationError} from "../../util/errors/validationError";
-import {ServerActionError} from "../../util/errors/serverActionError";
 import {SSManager} from "../../ssmanager";
+import {ServerActionError} from "../../util/errors/serverActionError";
+import {ValidationError} from "../../util/errors/validationError";
 
 import * as async from "async";
 
@@ -22,7 +22,7 @@ export class ServersController {
     public checkAllowed = async (req, res, next) => {
         const data = req.body;
 
-        //Validate inputs
+        // Validate inputs
         if (data.path === undefined) {
             return next(new ValidationError('path'));
         } else if (!/\S/.test(data.path)) {
@@ -35,7 +35,7 @@ export class ServersController {
     public resetPassword = async (req, res, next) => {
         const data = req.body;
 
-        //Validate inputs
+        // Validate inputs
         if (data.password === undefined) {
             return next(new ValidationError('password'));
         } else if (!/\S/.test(data.password)) {
@@ -52,7 +52,7 @@ export class ServersController {
     public writeFile = async (req, res, next) => {
         const data = req.body;
 
-        //Validate inputs
+        // Validate inputs
         if (data.path === undefined) {
             return next(new ValidationError('path'));
         } else if (data.contents === undefined) {
@@ -75,7 +75,7 @@ export class ServersController {
     public removeFile = async (req, res, next) => {
         const data = req.body;
 
-        //Validate inputs
+        // Validate inputs
         if (data.path === undefined) {
             return next(new ValidationError('path'));
         } else if (!/\S/.test(data.path)) {
@@ -94,7 +94,7 @@ export class ServersController {
     public removeFolder = async (req, res, next) => {
         const data = req.body;
 
-        //Validate inputs
+        // Validate inputs
         if (data.path === undefined) {
             return next(new ValidationError('path'));
         } else if (!/\S/.test(data.path)) {
@@ -113,7 +113,7 @@ export class ServersController {
     public fileContents = async (req, res, next) => {
         const data = req.body;
 
-        //Validate inputs
+        // Validate inputs
         if (data.path === undefined) {
             return next(new ValidationError('path'));
         } else if (!/\S/.test(data.path)) {
@@ -127,13 +127,13 @@ export class ServersController {
             return next(e);
         }
 
-        res.json({contents: contents});
+        res.json({contents});
     };
 
     public getDir = async (req, res, next) => {
         const data = req.body;
 
-        //Validate inputs
+        // Validate inputs
         if (data.path === undefined) {
             return next(new ValidationError('path'));
         } else if (!/\S/.test(data.path)) {
@@ -147,7 +147,7 @@ export class ServersController {
             return next(e);
         }
 
-        res.json({contents: contents});
+        res.json({contents});
     };
 
     public execute = async (req, res, next) => {
@@ -209,10 +209,10 @@ export class ServersController {
             return next(new ValidationError('config'));
         }
 
-        //Get the servers current config
-        let config = req.server.exportConfig();
+        // Get the servers current config
+        const config = req.server.exportConfig();
 
-        //Parse the new config as JSON
+        // Parse the new config as JSON
         let givenConfig;
         try {
             givenConfig = JSON.parse(req.body.config);
@@ -220,10 +220,10 @@ export class ServersController {
             return next(new ValidationError("givenConfig"));
         }
 
-        //Check if it contains a build
+        // Check if it contains a build
         if (givenConfig.build) {
-            //Verify build json
-            let build = givenConfig.build;
+            // Verify build json
+            const build = givenConfig.build;
             if (build.io === undefined || build.cpu === undefined || build.mem === undefined) {
                 return next(new ValidationError("Invalid build layout."));
             }
@@ -232,20 +232,21 @@ export class ServersController {
             config.build.mem = build.mem;
         }
 
-        //Check for port
+        // Check for port
         if (givenConfig.port) {
             config.port = givenConfig.port;
         }
-        //Check for maxplayers
+        // Check for maxplayers
         if (givenConfig.players) {
             config.players = givenConfig.players;
         }
 
-        //Check for game
+        // Check for game
         if (givenConfig.game) {
             const gameJson = SSManager.configsController.games.find(game => game.name === givenConfig.game);
-            if (gameJson === undefined)
+            if (gameJson === undefined) {
                 return next(new ValidationError("game"));
+            }
             config.game = gameJson;
         }
 
@@ -286,8 +287,9 @@ export class ServersController {
             return next(e);
         }
 
-        if (!removed)
+        if (!removed) {
             return next(new ValidationError("server"));
+        }
 
         res.json({});
     };
@@ -354,18 +356,18 @@ export class ServersController {
             return next(new ValidationError("config"));
         }
 
-        //Verify config json
+        // Verify config json
         if (config.id === undefined || config.game === undefined || config.port === undefined || config.build === undefined || config.players === undefined) {
             return next(new ValidationError("config"));
         }
 
-        //Verify build json
-        let build = config.build;
+        // Verify build json
+        const build = config.build;
         if (build.io === undefined || build.cpu === undefined || build.mem === undefined) {
             return next(new ValidationError("build"));
         }
 
-        //Verify players
+        // Verify players
         let players = config.players;
         try {
             players = Number.parseInt(players);
@@ -416,20 +418,22 @@ export class ServersController {
             }
         }
 
-        //Replace the game text with the actual game json. So, config.game = "Minecraft Spigot 1.13.1" would become the entire json of the game.
-        let gameJson = SSManager.configsController.games.find(game => game.name === config.game);
+        // Replace the game text with the actual game json. So, config.game = "Minecraft Spigot 1.13.1" would become the entire json of the game.
+        const gameJson = SSManager.configsController.games.find(game => game.name === config.game);
 
-        if (gameJson === undefined)
+        if (gameJson === undefined) {
             return next(new ValidationError("game"));
+        }
 
         config.game = gameJson;
 
-        //Check to make sure the server doesn't already exist.
-        if (SSManager.serverController.servers.find(server => server.id === config.id) !== undefined)
+        // Check to make sure the server doesn't already exist.
+        if (SSManager.serverController.servers.find(server => server.id === config.id) !== undefined) {
             return next(new ServerActionError("Server already exists."));
+        }
 
-        config.installed = false; //Server has not been installed
-        config.plugins = []; //Plugins start out empty.
+        config.installed = false; // Server has not been installed
+        config.plugins = []; // Plugins start out empty.
 
         let newServer;
         try {

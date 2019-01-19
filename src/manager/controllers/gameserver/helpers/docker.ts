@@ -1,26 +1,26 @@
-import {Helper} from "./helper";
 import {Gameserver} from "../gameserver";
+import {Helper} from "./helper";
 
 import * as Dockerode from 'dockerode';
-import {Status} from "../../../../util/status";
 import * as Tail from "tail";
 import * as userid from "userid";
 import {SSManager} from "../../../../ssmanager";
 import {ServerActionError} from "../../../../util/errors/serverActionError";
+import {Status} from "../../../../util/status";
 
 class DockerHelper extends Helper {
+    public containerShellStream;
+    public processStdinStream;
+    public containerLoggerStream;
+    public container;
 
     private readonly dockerController;
-    containerShellStream;
-    processStdinStream;
-    containerLoggerStream;
-    container;
 
 
     constructor(server: Gameserver) {
         super(server);
 
-        //TODO: may need to add a config option for specificity this manually
+        // TODO: may need to add a config option for specificity this manually
         this.dockerController = new Dockerode({
             socketPath: "/var/run/docker.sock"
         });
@@ -52,20 +52,20 @@ class DockerHelper extends Helper {
                 throw new ServerActionError("Invalid Docker Type specified in config.");
         }
 
-        //Specify container data
-        //Create container and get it all ready
+        // Specify container data
+        // Create container and get it all ready
         const newContainer = {
             Image: image,
             name: this.server.id,
-            User: userid.uid(this.server.id) + "", //Fix Docker user issue
+            User: userid.uid(this.server.id) + "", // Fix Docker user issue
             AttachStdin: true,
             AttachStdout: true,
             AttachStderr: true,
             OpenStdin: true,
             Tty: true,
-            ExposedPorts: {}, //Fill this in later
+            ExposedPorts: {}, // Fill this in later
             HostConfig: {
-                PortBindings: {}, //Fill this in later
+                PortBindings: {}, // Fill this in later
                 Mounts: [
                     {
                         Target: '/home/container',
@@ -109,10 +109,10 @@ class DockerHelper extends Helper {
             },
         };
 
-        //Fill in exposed ports
+        // Fill in exposed ports
         newContainer.ExposedPorts[this.server.port + "/tcp"] = {};
         newContainer.ExposedPorts[this.server.port + "/udp"] = {};
-        //Fill in port bindings
+        // Fill in port bindings
         newContainer.HostConfig.PortBindings[this.server.port + "/tcp"] = [{
             'HostPort': this.server.port.toString(),
         }];
@@ -142,11 +142,52 @@ class DockerHelper extends Helper {
     };
 
     public writeToProcess = (data: string) => {
-        if (!this.processStdinStream)
+        if (!this.processStdinStream) {
             return;
+        }
         this.processStdinStream.pause();
-        this.processStdinStream.write(data + "\n"); //New line is very critical. It cost me like an hour of debugging
+        this.processStdinStream.write(data + "\n"); // New line is very critical. It cost me like an hour of debugging
         this.processStdinStream.resume();
+    };
+
+    public startContainer = async () => {
+        await this.ensureStopped();
+
+        // Get our container up and running
+        await this.container.start();
+
+        // Build the command we're going to use to load the game server
+        let startCmd = this.server.currentGame.startCommand.replace(new RegExp('{memory}', 'g'), this.server.build.mem); // Server memory
+        startCmd = startCmd.replace(new RegExp('{port}', 'g'), String(this.server.port)); // Server port
+        startCmd = startCmd.replace(new RegExp('{players}', 'g'), String(this.server.players)); // Server port
+
+        SSManager.logger.verbose("start command: " + startCmd);
+
+        // Docker start commands
+        const dockerOptions = {
+            'AttachStdin': true,
+            'AttachStdout': true,
+            'AttachStderr': true,
+            'Tty': true,
+            'OpenStdin': true,
+            'StdinOnce': false,
+            Cmd: ['/bin/bash', '-c', startCmd],
+        };
+        // Execute commands on container
+        const exec = await this.container.exec(dockerOptions);
+        // Get the stream created by the process
+        this.processStdinStream = (await exec.start({stream: true, stdout: true, stderr: true, stdin: true})).output;
+        this.processStdinStream.setEncoding("utf8");
+
+        await this.initContainerShell();
+        await this.initFileLog();
+
+        this.processStdinStream.on('end', this.stdinEndListener);
+    };
+
+    public killContainer = async () => {
+        // TODO: cant find any docs on alternatives or why this is deprecated.
+        await this.container.stop();
     };
 
     /*
@@ -162,49 +203,9 @@ class DockerHelper extends Helper {
         return false;
     };
 
-    public startContainer = async () => {
-        await this.ensureStopped();
-
-        //Get our container up and running
-        await this.container.start();
-
-        //Build the command we're going to use to load the game server
-        let startCmd = this.server.currentGame.startCommand.replace(new RegExp('{memory}', 'g'), this.server.build.mem); //Server memory
-        startCmd = startCmd.replace(new RegExp('{port}', 'g'), String(this.server.port)); //Server port
-        startCmd = startCmd.replace(new RegExp('{players}', 'g'), String(this.server.players)); //Server port
-
-        SSManager.logger.verbose("start command: " + startCmd);
-
-        //Docker start commands
-        const dockerOptions = {
-            'AttachStdin': true,
-            'AttachStdout': true,
-            'AttachStderr': true,
-            'Tty': true,
-            'OpenStdin': true,
-            'StdinOnce': false,
-            Cmd: ['/bin/bash', '-c', startCmd],
-        };
-        //Execute commands on container
-        let exec = await this.container.exec(dockerOptions);
-        //Get the stream created by the process
-        this.processStdinStream = (await exec.start({stream: true, stdout: true, stderr: true, stdin: true})).output;
-        this.processStdinStream.setEncoding("utf8");
-
-        await this.initContainerShell();
-        await this.initFileLog();
-
-        this.processStdinStream.on('end', this.stdinEndListener);
-    };
-
     private stdinEndListener = () => {
         SSManager.logger.verbose("[Server " + this.server.id + "] Processes stream ended.");
         this.server.killContainer();
-    };
-
-    public killContainer = async () => {
-        //TODO: cant find any docs on alternatives or why this is deprecated.
-        await this.container.stop();
     };
 
     /*
@@ -214,10 +215,10 @@ class DockerHelper extends Helper {
         if (this.server.currentGame.logging.logFile.useLogFile) {
             let hadLogError = false;
 
-            //Get the log file specified
+            // Get the log file specified
             const filePath = this.server.currentGame.logging.logFile.path;
 
-            //We need to make sure these files exist for logging
+            // We need to make sure these files exist for logging
             await this.server.fsHelper.ensureFile(filePath);
             await this.server.fsHelper.truncateFile(filePath);
 
@@ -236,17 +237,20 @@ class DockerHelper extends Helper {
 
     private closeStreams = () => {
         SSManager.logger.verbose("Closing streams");
-        if (this.containerLoggerStream)
+        if (this.containerLoggerStream) {
             this.containerLoggerStream.unwatch();
+        }
         this.containerLoggerStream = undefined;
 
-        if (this.containerShellStream)
+        if (this.containerShellStream) {
             this.containerShellStream._output.removeAllListeners();
+        }
 
         this.containerShellStream = undefined;
 
-        if (this.processStdinStream)
+        if (this.processStdinStream) {
             this.processStdinStream.removeAllListeners();
+        }
 
         this.processStdinStream = undefined;
     };
@@ -261,8 +265,8 @@ class DockerHelper extends Helper {
             stderr: true
         });
 
-        //This is always enabled
-        //LMAO WTF! WHY IS THIS AT _.output AND WHY IS IT NOT DOCUMENTED
+        // This is always enabled
+        // LMAO WTF! WHY IS THIS AT _.output AND WHY IS IT NOT DOCUMENTED
         this.containerShellStream._output.on('end', () => {
             SSManager.logger.verbose("[Server " + this.server.id + "] Container stream ended.");
             this.closeStreams();
@@ -271,8 +275,8 @@ class DockerHelper extends Helper {
             this.server.logAnnounce("Your servers container encountered an error; " + data);
         });
 
-        //Only enabled if specified
-        //TODO: this might be brolken
+        // Only enabled if specified
+        // TODO: this might be brolken
         if (this.server.currentGame.logging.useStdout) {
             this.containerShellStream.on('data', data => {
                 this.server.logInfo(data);

@@ -2,11 +2,13 @@ import {SSManager} from "../../ssmanager";
 
 class AuthMiddleware {
     public authRequired = async (req, res, next) => {
-        if (!req.headers.authorization)
+        if (!req.headers.authorization) {
             return res.status(403).json({error: true, msg: "no_token"});
+        }
 
-        if (this.getTokenFromHeaders(req) !== SSManager.config.api.secret)
+        if (this.getTokenFromHeaders(req) !== SSManager.config.api.secret) {
             return res.status(403).json({error: true, msg: "bad_token"});
+        }
 
         next();
     };

@@ -1,12 +1,12 @@
-import * as SSUtil from "../../../util/util";
 import * as path from 'path';
 import {SSManager} from "../../../ssmanager";
+import * as SSUtil from "../../../util/util";
 import {IGame} from "./gameConfig";
 import {IPlugin} from "./pluginConfig";
 
 export class ConfigsController {
-    public games: Array<IGame>;
-    public plugins: Array<IPlugin>;
+    public games: IGame[];
+    public plugins: IPlugin[];
 
     private readonly dataFolder: string;
 

@@ -1,40 +1,40 @@
-import {Status} from "../../../util/status";
-import {DockerHelper} from "./helpers/docker";
-import {SocketHelper} from "./helpers/socket";
-import {IServer} from "../configs/serverConfig";
-import {FilesystemHelper} from "./helpers/fs";
-import {IGame} from "../configs/gameConfig";
 import {SSManager} from "../../../ssmanager";
 import {ServerActionError} from "../../../util/errors/serverActionError";
+import {Status} from "../../../util/status";
+import {IGame} from "../configs/gameConfig";
+import {IServer} from "../configs/serverConfig";
+import {DockerHelper} from "./helpers/docker";
+import {FilesystemHelper} from "./helpers/fs";
+import {SocketHelper} from "./helpers/socket";
 
+import * as async from "async";
+import * as proc from "child_process";
+import {EventEmitter} from "events";
 import * as fs from "fs-extra";
 import * as path from 'path';
-import * as proc from "child_process";
-import * as util from "util";
-import * as async from "async";
-import * as sha1file from "sha1-file";
-import {EventEmitter} from "events";
 import * as Pty from "pty.js";
+import * as sha1file from "sha1-file";
 import * as stripAnsi from "strip-ansi";
+import * as util from "util";
 import {GamedigHelper} from "./helpers/gamedig";
 
 export class Gameserver extends EventEmitter {
 
-    currentGame: IGame;
-    status: Status;
-    id: string;
-    installedPlugins: any;
-    build: any;
-    port: number;
-    players: number;
+    public currentGame: IGame;
+    public status: Status;
+    public id: string;
+    public installedPlugins: any;
+    public build: any;
+    public port: number;
+    public players: number;
 
-    isBlocked: boolean;
-    isInstalled: boolean;
+    public isBlocked: boolean;
+    public isInstalled: boolean;
 
-    dockerHelper: DockerHelper;
-    socketHelper: SocketHelper;
-    fsHelper: FilesystemHelper;
-    gamedigHelper: GamedigHelper;
+    public dockerHelper: DockerHelper;
+    public socketHelper: SocketHelper;
+    public fsHelper: FilesystemHelper;
+    public gamedigHelper: GamedigHelper;
 
     constructor(conf: IServer) {
         super();
@@ -87,11 +87,13 @@ export class Gameserver extends EventEmitter {
     };
 
     public reloadConfig = async (conf: IServer): Promise<void> => {
-        if (this.isBlocked)
+        if (this.isBlocked) {
             throw new ServerActionError("Server is locked. It may be installing or updating.");
+        }
 
-        if (this.status !== Status.Off)
+        if (this.status !== Status.Off) {
             throw new ServerActionError("Server is not off.");
+        }
 
         this.setBlocked(true);
 
@@ -112,13 +114,14 @@ export class Gameserver extends EventEmitter {
     };
 
     public create = async (password: string): Promise<void> => {
-        if (this.isBlocked)
+        if (this.isBlocked) {
             throw new ServerActionError("Server is locked. It may be installing or updating.");
+        }
         this.setBlocked(true);
         await new Promise((resolve, reject) => {
             proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/newUser.sh") + " %s %s", this.id, password), (err) => {
-                if(err) return reject(err);
-                else return resolve();
+                if(err) { return reject(err); }
+                else { return resolve(); }
             });
         });
         await this.dockerHelper.create();
@@ -133,31 +136,23 @@ export class Gameserver extends EventEmitter {
         });
     };
 
-    private runUpdateScripts = async (): Promise<void> => {
-        const updateCommands = this.currentGame.update;
-        await this.executeShellStack(updateCommands);
-    };
-
-    private runInstallScripts = async (): Promise<void> => {
-        const installCommands = this.currentGame.install;
-        await this.executeShellStack(installCommands);
-    };
-
     public start = async (): Promise<void> => {
-        if (this.isBlocked)
+        if (this.isBlocked) {
             throw new ServerActionError("Server is locked. It may be installing or updating.");
+        }
 
-        if (this.status !== Status.Off)
+        if (this.status !== Status.Off) {
             throw new ServerActionError("Server is not off.");
+        }
 
         this.logAnnounce("Verifying server integrity...");
 
-        //Make sure the sha1 hashes are ok
-        //TODO: maybe change from sha1, the risk is literally non-existent, but its good practice
+        // Make sure the sha1 hashes are ok
+        // TODO: maybe change from sha1, the risk is literally non-existent, but its good practice
         await Promise.all(this.currentGame.verify.map(async rule => {
             await new Promise((resolve, reject) => {
                 sha1file(this.fsHelper.extendPath(rule.path), (err, sha) => {
-                    if (err) return reject(err);
+                    if (err) { return reject(err); }
                     else {
                         if (sha === rule.sha1) {
                             return resolve();
@@ -172,7 +167,7 @@ export class Gameserver extends EventEmitter {
         this.logAnnounce("Server files checked out.");
         this.logAnnounce("Bootstrapping server...");
 
-        //Start server
+        // Start server
         this.updateStatus(Status.Starting);
 
         this.gamedigHelper.start();
@@ -180,48 +175,58 @@ export class Gameserver extends EventEmitter {
     };
 
     public executeCommand = (command: string): void => {
-        if (this.status !== Status.Running)
+        if (this.status !== Status.Running) {
             throw new ServerActionError("Server is not running.");
+        }
 
-        if (command === this.currentGame.stopConsoleCommand)
+        if (command === this.currentGame.stopConsoleCommand) {
             this.updateStatus(Status.Stopping);
+        }
 
         this.dockerHelper.writeToProcess(command);
     };
 
     public removePlugin = async (plugin: string): Promise<void> => {
-        if (this.isBlocked)
+        if (this.isBlocked) {
             throw new ServerActionError("Server is locked. It may be installing or updating.");
-        if (this.status !== Status.Off)
+        }
+        if (this.status !== Status.Off) {
             throw new ServerActionError("Server is not off.");
+        }
 
         this.setBlocked(true);
 
         const pluginData = this.installedPlugins.find(installedData => installedData.name === plugin);
-        if (pluginData === undefined)
+        if (pluginData === undefined) {
             throw new ServerActionError("Plugin not installed.");
+        }
 
         await this.executeShellStack(pluginData.remove);
     };
 
     public installPlugin = async (plugin: string): Promise<void> => {
-        if (this.isBlocked)
+        if (this.isBlocked) {
             throw new ServerActionError("Server is locked. It may be installing or updating.");
-        if (this.status !== Status.Off)
+        }
+        if (this.status !== Status.Off) {
             throw new ServerActionError("Server is not off.");
+        }
 
         this.setBlocked(true);
 
         const targetPlugin = SSManager.configsController.plugins.find(pluginData => pluginData.name === plugin);
-        if (targetPlugin === undefined)
+        if (targetPlugin === undefined) {
             throw new ServerActionError("Plugin does not exist.");
+        }
 
 
-        if (targetPlugin.game !== this.currentGame.name)
+        if (targetPlugin.game !== this.currentGame.name) {
             throw new ServerActionError("Plugin not supported.");
+        }
 
-        if (this.installedPlugins.find(installedData => installedData.name === plugin) !== undefined)
+        if (this.installedPlugins.find(installedData => installedData.name === plugin) !== undefined) {
             throw new ServerActionError("Plugin already installed.");
+        }
 
         this.installedPlugins.push(targetPlugin);
         await this.updateConfig();
@@ -232,14 +237,14 @@ export class Gameserver extends EventEmitter {
     };
 
     public changePassword = async (password: string): Promise<void> => {
-        //TODO: double check if support is added for SFTP
-        //Strip all possible things that might mess this up
+        // TODO: double check if support is added for SFTP
+        // Strip all possible things that might mess this up
         const newPassword = '"' + password.replace(/(["\s'$`\\])/g, '\\$1') + '"';
 
         await new Promise((resolve, reject) => {
             proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/resetPassword.sh") + " %s %s", this.id, newPassword), (err) => {
-                if(err) return reject(err);
-                else return resolve();
+                if(err) { return reject(err); }
+                else { return resolve(); }
             });
         });
 
@@ -249,14 +254,16 @@ export class Gameserver extends EventEmitter {
     WARNING: Do not directly call this, as it will not remove the server from the listing.
      */
     public remove = async (): Promise<void> => {
-        if (this.isBlocked)
+        if (this.isBlocked) {
             throw new ServerActionError("Server is locked. It may be installing or updating.");
-        if (this.status !== Status.Off)
+        }
+        if (this.status !== Status.Off) {
             throw new ServerActionError("Server is not off.");
+        }
 
         this.setBlocked(true);
 
-        //If an error occurs here we need to unblock the server
+        // If an error occurs here we need to unblock the server
         try {
             await this.dockerHelper.destroy();
         } catch (e) {
@@ -266,8 +273,8 @@ export class Gameserver extends EventEmitter {
 
         await new Promise((resolve, reject) => {
             proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/removeUser.sh") + " %s", this.id), (err) => {
-                if(err) return reject(err);
-                else return resolve();
+                if(err) { return reject(err); }
+                else { return resolve(); }
             });
         });
 
@@ -275,12 +282,15 @@ export class Gameserver extends EventEmitter {
     };
 
     public reinstall = async (): Promise<void> => {
-        if (this.isBlocked)
+        if (this.isBlocked) {
             throw new ServerActionError("Server is locked. It may be installing or updating.");
-        if (!this.isInstalled)
+        }
+        if (!this.isInstalled) {
             throw new ServerActionError("Install the server instead of reinstalling.");
-        if (this.status !== Status.Off)
+        }
+        if (this.status !== Status.Off) {
             throw new ServerActionError("Server is not off.");
+        }
 
         this.setBlocked(true);
 
@@ -290,8 +300,8 @@ export class Gameserver extends EventEmitter {
         this.logAnnounce("Removing old server data...");
         await new Promise((resolve, reject) => {
             proc.exec(util.format(path.join(SSManager.getRoot(), "/bashScripts/clearUser.sh") + " %s", this.id), (err) => {
-                if(err) return reject(err);
-                else return resolve();
+                if(err) { return reject(err); }
+                else { return resolve(); }
             });
         });
 
@@ -302,7 +312,7 @@ export class Gameserver extends EventEmitter {
 
         this.logAnnounce("Rebuilding container...");
 
-        //Catch this error so the server doesn't get stuck in blocked mode
+        // Catch this error so the server doesn't get stuck in blocked mode
         try {
             await this.dockerHelper.rebuild();
         }catch (e) {
@@ -316,21 +326,25 @@ export class Gameserver extends EventEmitter {
     };
 
     public stop = (): void => {
-        if (this.status !== Status.Running)
+        if (this.status !== Status.Running) {
             throw new ServerActionError("Server is not running.");
+        }
         this.dockerHelper.writeToProcess(this.currentGame.stopConsoleCommand);
         this.updateStatus(Status.Stopping);
     };
 
     public install = async (): Promise<void> => {
-        if (this.isBlocked)
+        if (this.isBlocked) {
             throw new ServerActionError("Server is locked. It may be installing or updating.");
+        }
 
-        if (this.isInstalled)
+        if (this.isInstalled) {
             throw new ServerActionError("Reinstall the server instead of installing.");
+        }
 
-        if (this.status !== Status.Off)
+        if (this.status !== Status.Off) {
             throw new ServerActionError("Server is not off.");
+        }
 
         this.setBlocked(true);
 
@@ -346,8 +360,9 @@ export class Gameserver extends EventEmitter {
 
 
     public logInfo = (data: string): void => {
-        if (this.status === Status.Starting)
+        if (this.status === Status.Starting) {
             this.updateStatus(Status.Running);
+        }
         SSManager.logger.verbose("[Server " + this.id + "] " + data);
         this.emit('console', stripAnsi(data));
     };
@@ -364,6 +379,41 @@ export class Gameserver extends EventEmitter {
         this.emit('statusChange', status);
     };
 
+    /*
+    This will throw an exception if the server is not running.
+     */
+    public forceKill = async (): Promise<void> => {
+        if (this.status === Status.Off) {
+            throw new ServerActionError("Server is not running.");
+        }
+
+        await this.killContainer();
+    };
+
+    /*
+    This won't, so use it internally.
+     */
+    public killContainer = async (updateStatus: boolean = true): Promise<void> => {
+        if(updateStatus) {
+            this.updateStatus(Status.Stopping);
+        }
+
+        if (this.status !== Status.Off) {
+            this.gamedigHelper.stop();
+            await this.dockerHelper.killContainer();
+        }
+    };
+
+    private runUpdateScripts = async (): Promise<void> => {
+        const updateCommands = this.currentGame.update;
+        await this.executeShellStack(updateCommands);
+    };
+
+    private runInstallScripts = async (): Promise<void> => {
+        const installCommands = this.currentGame.install;
+        await this.executeShellStack(installCommands);
+    };
+
     private setBlocked = (isBlocked: boolean): void => {
         SSManager.logger.verbose("[Server " + this.id + " ] Blocked set to " + isBlocked);
         this.isBlocked = isBlocked;
@@ -376,34 +426,11 @@ export class Gameserver extends EventEmitter {
         await this.updateConfig();
     };
 
-    /*
-    This will throw an exception if the server is not running.
-     */
-    public forceKill = async (): Promise<void> => {
-        if (this.status === Status.Off)
-            throw new ServerActionError("Server is not running.");
-
-        await this.killContainer();
-    };
-
-    /*
-    This won't, so use it internally.
-     */
-    public killContainer = async (updateStatus: boolean = true): Promise<void> => {
-        if(updateStatus)
-            this.updateStatus(Status.Stopping);
-
-        if (this.status !== Status.Off) {
-            this.gamedigHelper.stop();
-            await this.dockerHelper.killContainer();
-        }
-    };
-
     private executeShellStack = async (stack: any): Promise<void> => {
         await new Promise((resolve) => {
             async.forEachSeries(stack, (cmd: any, next) => {
-                let shell = 'su';
-                let params = [
+                const shell = 'su';
+                const params = [
                     '-s',
                     '/bin/bash',
                     '-l',
@@ -411,7 +438,7 @@ export class Gameserver extends EventEmitter {
                     '-c',
                     'cd ' + this.fsHelper.getRoot() + ' && ' + cmd.command
                 ];
-                let installerProcess = Pty.spawn(shell, params);
+                const installerProcess = Pty.spawn(shell, params);
                 installerProcess.on('exit', () => {
                     next()
                 });

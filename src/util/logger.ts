@@ -1,10 +1,10 @@
-import {SSManager} from "../ssmanager";
 import * as path from 'path';
 import * as winston from 'winston';
+import {SSManager} from "../ssmanager";
 
 export class Logger {
 
-    //TODO: implement fs logging
+    // TODO: implement fs logging
     private logger;
 
     constructor(logToFile: boolean) {

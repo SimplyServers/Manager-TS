@@ -7,6 +7,7 @@
     "build": "tsc",
     "dev": "ts-node ./src/server.ts",
     "start": "nodemon ./dist/server.js",
+    "lint": "tslint -c tslint.json -e './node_modules/' --project './' --fix",
     "prod": "npm run build && npm run start"
   },
   "author": "",
@@ -23,7 +24,10 @@
     "@types/tail": "^1.2.0",
     "@types/winston": "^2.4.4",
     "nodemon": "^1.18.9",
+    "prettier": "^1.15.3",
     "ts-node": "^7.0.1",
+    "tslint": "^5.12.1",
+    "tslint-config-prettier": "^1.17.0",
     "typescript": "^3.2.2"
   },
   "dependencies": {

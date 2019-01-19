@@ -1,6 +1,6 @@
+import * as devNull from "dev-null";
 import * as Dockerode from "dockerode";
 import * as DockerodeUtils from "dockerode-utils";
-import * as devNull from "dev-null";
 import * as path from "path";
 
 import {SSManager} from "../ssmanager";
@@ -10,7 +10,7 @@ class DockerInstaller {
     private readonly dockerContoller;
 
     constructor() {
-        //TODO: may need to add a config option for specificity this manually
+        // TODO: may need to add a config option for specificity this manually
         this.dockerContoller = new Dockerode({
             socketPath: "/var/run/docker.sock"
         });
@@ -30,12 +30,12 @@ class DockerInstaller {
                 context: path,
                 src: ['Dockerfile']
             }, {t: name}, (err, stream) => {
-                if (err) return reject(err);
+                if (err) { return reject(err); }
 
-                //Pipe the stream to its doom!
+                // Pipe the stream to its doom!
                 stream.pipe(devNull(), {end: true});
 
-                //Return when its done installing
+                // Return when its done installing
                 stream.on('end', () => {
                     return resolve();
                 });

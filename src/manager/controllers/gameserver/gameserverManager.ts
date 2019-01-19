@@ -1,11 +1,11 @@
-import * as SSUtil from "../../../util/util";
 import * as path from "path";
 import {SSManager} from "../../../ssmanager";
-import {Gameserver} from "./gameserver";
+import * as SSUtil from "../../../util/util";
 import {IServer} from "../configs/serverConfig";
+import {Gameserver} from "./gameserver";
 
 export class GameserverController {
-    public servers: Array<Gameserver>;
+    public servers: Gameserver[];
 
     private readonly dataFolder: string;
 
@@ -23,7 +23,7 @@ export class GameserverController {
     };
 
     public getNiceConfigs = (): object => {
-        let niceConfigs = [];
+        const niceConfigs = [];
         this.servers.map(server => {
             niceConfigs.push(server.getInfo());
         });

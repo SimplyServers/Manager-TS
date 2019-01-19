@@ -8,7 +8,7 @@ export class NodeController {
                 let status = {};
                 if (err) {
                     status = {
-                        cpu: cpu,
+                        cpu,
                         totalmem: osUtils.totalmem(),
                         freemem: osUtils.freemem(),
                         totaldisk: 1,
@@ -16,7 +16,7 @@ export class NodeController {
                     };
                 } else {
                     status = {
-                        cpu: cpu,
+                        cpu,
                         totalmem: osUtils.totalmem(),
                         freemem: osUtils.freemem(),
                         totaldisk: disk.total,

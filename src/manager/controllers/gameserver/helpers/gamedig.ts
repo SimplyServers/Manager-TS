@@ -1,15 +1,15 @@
-import {Helper} from "./helper";
 import {Gameserver} from "../gameserver";
+import {Helper} from "./helper";
 
 import * as gamedig from "gamedig";
-import {Status} from "../../../../util/status";
 import {SSManager} from "../../../../ssmanager";
+import {Status} from "../../../../util/status";
 
 class GamedigHelper extends Helper {
 
-    pingerInterval;
-    failedPings: number;
-    enabled: boolean;
+    public pingerInterval;
+    public failedPings: number;
+    public enabled: boolean;
 
     constructor(server: Gameserver) {
         super(server);
@@ -25,8 +25,9 @@ class GamedigHelper extends Helper {
     public stop = () => {
         this.failedPings = 0;
         this.enabled = false;
-        if (this.pingerInterval)
+        if (this.pingerInterval) {
             clearInterval(this.pingerInterval);
+        }
     };
 
     private pinger = () => {
@@ -47,11 +48,12 @@ class GamedigHelper extends Helper {
         }).catch(() => {
             SSManager.logger.verbose("Ping failed");
             if (this.failedPings >= 3) {
-                if (this.server.status !== Status.Off)
+                if (this.server.status !== Status.Off) {
                     this.server.killContainer().then(() => {
                         this.failedPings = 0;
                         this.server.logAnnounce("Your server has been killed due to the server not responding.")
                     });
+                }
             } else {
                 this.failedPings++;
             }
