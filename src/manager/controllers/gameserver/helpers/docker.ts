@@ -49,7 +49,7 @@ class DockerHelper extends Helper {
                 image = 'ssjava';
                 break;
             default:
-                throw new ServerActionError("Invalid Docker Type specified in config.");
+                throw new ServerActionError("INVALID_DOCKER_TYPE");
         }
 
         // Specify container data

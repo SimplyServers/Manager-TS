@@ -18,7 +18,7 @@ class FilesystemHelper extends Helper {
      */
     public getDir = async (partialPath: string) => {
         if (this.server.isBlocked) {
-            throw new ServerActionError("Server is locked. It may be installing or updating.");
+            throw new ServerActionError("SERVER_LOCKED");
         }
 
         const filePath = this.extendPath(partialPath);
@@ -53,7 +53,7 @@ class FilesystemHelper extends Helper {
 
     public getFileContents = async (partialPath: string) => {
         if (this.server.isBlocked) {
-            throw new ServerActionError("Server is locked. It may be installing or updating.");
+            throw new ServerActionError("SERVER_LOCKED");
         }
 
         const filePath = this.extendPath(partialPath);
@@ -76,7 +76,7 @@ class FilesystemHelper extends Helper {
 
     public writeFile = async (partialPath: string, contents: string) => {
         if (this.server.isBlocked) {
-            throw new ServerActionError("Server is locked. It may be installing or updating.");
+            throw new ServerActionError("SERVER_LOCKED");
         }
 
         const filePath = this.extendPath(partialPath);
@@ -95,7 +95,7 @@ class FilesystemHelper extends Helper {
 
     public removeFile = async (partialPath: string) => {
         if (this.server.isBlocked) {
-            throw new ServerActionError("Server is locked. It may be installing or updating.");
+            throw new ServerActionError("SERVER_LOCKED");
         }
 
         const filePath = this.extendPath(partialPath);
@@ -113,7 +113,7 @@ class FilesystemHelper extends Helper {
 
     public removeFolder = async (partialPath: string) => {
         if (this.server.isBlocked) {
-            throw new ServerActionError("Server is locked. It may be installing or updating.");
+            throw new ServerActionError("SERVER_LOCKED");
         }
 
         const filePath = this.extendPath(partialPath);

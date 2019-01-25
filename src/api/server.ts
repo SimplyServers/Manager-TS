@@ -81,7 +81,7 @@ export class APIServer {
                 res.status(400);
                 res.json({
                     "error": true,
-                    "msg": "Validation error.",
+                    "msg": "VALIDATION_ERROR",
                     "field": err.field
                 });
             } else if (err.code && err.code === 'FILEERROR') {
@@ -95,7 +95,7 @@ export class APIServer {
                 res.status(500);
                 res.json({
                     "error": true,
-                    "msg": "File not found",
+                    "msg": "FILE_NOT_FOUND",
                     "file": err.path
                 });
             } else {

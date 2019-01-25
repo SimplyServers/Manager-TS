@@ -88,11 +88,11 @@ export class Gameserver extends EventEmitter {
 
     public reloadConfig = async (conf: IServer): Promise<void> => {
         if (this.isBlocked) {
-            throw new ServerActionError("Server is locked. It may be installing or updating.");
+            throw new ServerActionError("SERVER_LOCKED");
         }
 
         if (this.status !== Status.Off) {
-            throw new ServerActionError("Server is not off.");
+            throw new ServerActionError("SERVER_NOT_OFF");
         }
 
         this.setBlocked(true);
@@ -115,7 +115,7 @@ export class Gameserver extends EventEmitter {
 
     public create = async (password: string): Promise<void> => {
         if (this.isBlocked) {
-            throw new ServerActionError("Server is locked. It may be installing or updating.");
+            throw new ServerActionError("SERVER_LOCKED");
         }
         this.setBlocked(true);
         await new Promise((resolve, reject) => {
@@ -138,11 +138,11 @@ export class Gameserver extends EventEmitter {
 
     public start = async (): Promise<void> => {
         if (this.isBlocked) {
-            throw new ServerActionError("Server is locked. It may be installing or updating.");
+            throw new ServerActionError("SERVER_LOCKED");
         }
 
         if (this.status !== Status.Off) {
-            throw new ServerActionError("Server is not off.");
+            throw new ServerActionError("SERVER_NOT_OFF");
         }
 
         this.logAnnounce("Verifying server integrity...");
@@ -157,7 +157,7 @@ export class Gameserver extends EventEmitter {
                         if (sha === rule.sha1) {
                             return resolve();
                         } else {
-                            return reject(new ServerActionError("Reinstall your server."));
+                            return reject(new ServerActionError("REINSTALL"));
                         }
                     }
                 });
@@ -176,7 +176,7 @@ export class Gameserver extends EventEmitter {
 
     public executeCommand = (command: string): void => {
         if (this.status !== Status.Running) {
-            throw new ServerActionError("Server is not running.");
+            throw new ServerActionError("SERVER_NOT_RUNNING");
         }
 
         if (command === this.currentGame.stopConsoleCommand) {
@@ -188,17 +188,17 @@ export class Gameserver extends EventEmitter {
 
     public removePlugin = async (plugin: string): Promise<void> => {
         if (this.isBlocked) {
-            throw new ServerActionError("Server is locked. It may be installing or updating.");
+            throw new ServerActionError("SERVER_LOCKED");
         }
         if (this.status !== Status.Off) {
-            throw new ServerActionError("Server is not off.");
+            throw new ServerActionError("SERVER_LOCKED");
         }
 
         this.setBlocked(true);
 
         const pluginData = this.installedPlugins.find(installedData => installedData.name === plugin);
         if (pluginData === undefined) {
-            throw new ServerActionError("Plugin not installed.");
+            throw new ServerActionError("PLUGIN_NOT_INSTALLED");
         }
 
         await this.executeShellStack(pluginData.remove);
@@ -206,26 +206,26 @@ export class Gameserver extends EventEmitter {
 
     public installPlugin = async (plugin: string): Promise<void> => {
         if (this.isBlocked) {
-            throw new ServerActionError("Server is locked. It may be installing or updating.");
+            throw new ServerActionError("SERVER_LOCKED");
         }
         if (this.status !== Status.Off) {
-            throw new ServerActionError("Server is not off.");
+            throw new ServerActionError("SERVER_NOT_OFF");
         }
 
         this.setBlocked(true);
 
         const targetPlugin = SSManager.configsController.plugins.find(pluginData => pluginData.name === plugin);
         if (targetPlugin === undefined) {
-            throw new ServerActionError("Plugin does not exist.");
+            throw new ServerActionError("INVALID_PLUGIN");
         }
 
 
         if (targetPlugin.game !== this.currentGame.name) {
-            throw new ServerActionError("Plugin not supported.");
+            throw new ServerActionError("PLUGIN_NOT_SUPPORTED");
         }
 
         if (this.installedPlugins.find(installedData => installedData.name === plugin) !== undefined) {
-            throw new ServerActionError("Plugin already installed.");
+            throw new ServerActionError("PLUGIN_INSTALLED");
         }
 
         this.installedPlugins.push(targetPlugin);
@@ -255,10 +255,10 @@ export class Gameserver extends EventEmitter {
      */
     public remove = async (): Promise<void> => {
         if (this.isBlocked) {
-            throw new ServerActionError("Server is locked. It may be installing or updating.");
+            throw new ServerActionError("SERVER_LOCKED");
         }
         if (this.status !== Status.Off) {
-            throw new ServerActionError("Server is not off.");
+            throw new ServerActionError("SERVER_NOT_OFF");
         }
 
         this.setBlocked(true);
@@ -268,7 +268,7 @@ export class Gameserver extends EventEmitter {
             await this.dockerHelper.destroy();
         } catch (e) {
             this.setBlocked(false);
-            throw new ServerActionError("Failed to remove Docker; " + e);
+            throw new ServerActionError("FAILED_TO_REMOVE_DOCKER");
         }
 
         await new Promise((resolve, reject) => {
@@ -283,13 +283,13 @@ export class Gameserver extends EventEmitter {
 
     public reinstall = async (): Promise<void> => {
         if (this.isBlocked) {
-            throw new ServerActionError("Server is locked. It may be installing or updating.");
+            throw new ServerActionError("SERVER_LOCKED");
         }
         if (!this.isInstalled) {
-            throw new ServerActionError("Install the server instead of reinstalling.");
+            throw new ServerActionError("INSTALL_INSTEAD");
         }
         if (this.status !== Status.Off) {
-            throw new ServerActionError("Server is not off.");
+            throw new ServerActionError("SERVER_NOT_OFF");
         }
 
         this.setBlocked(true);
@@ -317,7 +317,7 @@ export class Gameserver extends EventEmitter {
             await this.dockerHelper.rebuild();
         }catch (e) {
             this.setBlocked(false);
-            throw new ServerActionError("Failed to remove Docker; " + e);
+            throw new ServerActionError("FAILED_TO_INSTALL_DOCKER");
         }
 
         this.logAnnounce("Finished reinstalling server. You may now start it!");
@@ -327,7 +327,7 @@ export class Gameserver extends EventEmitter {
 
     public stop = (): void => {
         if (this.status !== Status.Running) {
-            throw new ServerActionError("Server is not running.");
+            throw new ServerActionError("SERVER_NOT_RUNNING");
         }
         this.dockerHelper.writeToProcess(this.currentGame.stopConsoleCommand);
         this.updateStatus(Status.Stopping);
@@ -335,15 +335,15 @@ export class Gameserver extends EventEmitter {
 
     public install = async (): Promise<void> => {
         if (this.isBlocked) {
-            throw new ServerActionError("Server is locked. It may be installing or updating.");
+            throw new ServerActionError("SERVER_LOCKED");
         }
 
         if (this.isInstalled) {
-            throw new ServerActionError("Reinstall the server instead of installing.");
+            throw new ServerActionError("REINSTALL_INSTEAD");
         }
 
         if (this.status !== Status.Off) {
-            throw new ServerActionError("Server is not off.");
+            throw new ServerActionError("SERVER_NOT_OFF");
         }
 
         this.setBlocked(true);
@@ -384,7 +384,7 @@ export class Gameserver extends EventEmitter {
      */
     public forceKill = async (): Promise<void> => {
         if (this.status === Status.Off) {
-            throw new ServerActionError("Server is not running.");
+            throw new ServerActionError("SERVER_NOT_RUNNING");
         }
 
         await this.killContainer();

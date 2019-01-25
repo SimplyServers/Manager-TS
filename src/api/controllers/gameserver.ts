@@ -181,7 +181,7 @@ export class ServersController {
                     await req.server.forceKill();
                     break;
                 default:
-                    return next(new ServerActionError("Invalid power action."))
+                    return next(new ServerActionError("INVALID_POWER_ACTION"))
             }
         } catch (e) {
             return next(e);
@@ -225,7 +225,7 @@ export class ServersController {
             // Verify build json
             const build = givenConfig.build;
             if (build.io === undefined || build.cpu === undefined || build.mem === undefined) {
-                return next(new ValidationError("Invalid build layout."));
+                return next(new ValidationError("INVALID_BUILD"));
             }
             config.build.io = build.io;
             config.build.cpu = build.cpu;
@@ -403,7 +403,7 @@ export class ServersController {
                         next();
                     }, () => {
                         if (found === false) {
-                            return reject(new ServerActionError("All ports in use"));
+                            return reject(new ServerActionError("NO_PORTS"));
                         }
                         config.port = currentPort;
                         return resolve();
@@ -414,7 +414,7 @@ export class ServersController {
             }
         } else {
             if (!checkPort(config.port)) {
-                return next(new ServerActionError("Port in use"));
+                return next(new ServerActionError("PORT_IN_USE"));
             }
         }
 
@@ -429,7 +429,7 @@ export class ServersController {
 
         // Check to make sure the server doesn't already exist.
         if (SSManager.serverController.servers.find(server => server.id === config.id) !== undefined) {
-            return next(new ServerActionError("Server already exists."));
+            return next(new ServerActionError("SERVER_EXISTS"));
         }
 
         config.installed = false; // Server has not been installed
