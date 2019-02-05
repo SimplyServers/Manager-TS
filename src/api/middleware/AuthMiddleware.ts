@@ -1,4 +1,4 @@
-import {SSManager} from "../../ssmanager";
+import {SSManager} from "../../SSManager";
 
 class AuthMiddleware {
     public authRequired = async (req, res, next) => {

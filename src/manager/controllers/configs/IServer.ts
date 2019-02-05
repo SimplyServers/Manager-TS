@@ -1,4 +1,4 @@
-import {IGame} from "./gameConfig";
+import {IGame} from "./IGame";
 
 export interface IServer {
     game: IGame,

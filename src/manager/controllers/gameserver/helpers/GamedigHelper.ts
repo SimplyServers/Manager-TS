@@ -1,9 +1,9 @@
-import {Gameserver} from "../gameserver";
-import {Helper} from "./helper";
+import {GameServer} from "../GameServer";
+import {Helper} from "./Helper";
 
-import * as gamedig from "gamedig";
-import {SSManager} from "../../../../ssmanager";
-import {Status} from "../../../../util/status";
+import * as gamedig from "GamedigHelper";
+import {SSManager} from "../../../../SSManager";
+import {Status} from "../../../../util/Status";
 
 class GamedigHelper extends Helper {
 
@@ -11,7 +11,7 @@ class GamedigHelper extends Helper {
     public failedPings: number;
     public enabled: boolean;
 
-    constructor(server: Gameserver) {
+    constructor(server: GameServer) {
         super(server);
         this.failedPings = 0;
         this.enabled = false;

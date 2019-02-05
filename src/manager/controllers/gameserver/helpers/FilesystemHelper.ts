@@ -1,15 +1,15 @@
-import {Gameserver} from "../gameserver";
-import {Helper} from "./helper";
+import {GameServer} from "../GameServer";
+import {Helper} from "./Helper";
 
 import * as fs from "fs-extra";
 import * as path from 'path';
 import * as querystring from "querystring";
 import * as userid from "userid";
-import {FileError} from "../../../../util/errors/fileError";
-import {ServerActionError} from "../../../../util/errors/serverActionError";
+import {FileError} from "../../../../util/errors/FileError";
+import {ServerActionError} from "../../../../util/errors/ServerActionError";
 
 class FilesystemHelper extends Helper {
-    constructor(server: Gameserver) {
+    constructor(server: GameServer) {
         super(server);
     }
 

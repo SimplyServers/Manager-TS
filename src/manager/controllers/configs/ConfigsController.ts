@@ -1,8 +1,8 @@
 import * as path from 'path';
-import {SSManager} from "../../../ssmanager";
-import * as SSUtil from "../../../util/util";
-import {IGame} from "./gameConfig";
-import {IPlugin} from "./pluginConfig";
+import {SSManager} from "../../../SSManager";
+import * as SSUtil from "../../../util/Util";
+import {IGame} from "./IGame";
+import {IPlugin} from "./IPlugin";
 
 export class ConfigsController {
     public games: IGame[];

@@ -1,4 +1,4 @@
-import {SSManager} from "../../ssmanager";
+import {SSManager} from "../../SSManager";
 
 class LoadedMiddleware{
     public mustBeLoaded = async (req, res, next) => {

@@ -1,6 +1,6 @@
-import {SSManager} from "../../ssmanager";
-import {ServerActionError} from "../../util/errors/serverActionError";
-import {ValidationError} from "../../util/errors/validationError";
+import {SSManager} from "../../SSManager";
+import {ServerActionError} from "../../util/errors/ServerActionError";
+import {ValidationError} from "../../util/errors/ValidationError";
 
 import * as async from "async";
 

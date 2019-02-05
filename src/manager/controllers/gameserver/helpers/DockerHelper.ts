@@ -1,12 +1,12 @@
-import {Gameserver} from "../gameserver";
-import {Helper} from "./helper";
+import {GameServer} from "../GameServer";
+import {Helper} from "./Helper";
 
 import * as Dockerode from 'dockerode';
 import * as Tail from "tail";
 import * as userid from "userid";
-import {SSManager} from "../../../../ssmanager";
-import {ServerActionError} from "../../../../util/errors/serverActionError";
-import {Status} from "../../../../util/status";
+import {SSManager} from "../../../../SSManager";
+import {ServerActionError} from "../../../../util/errors/ServerActionError";
+import {Status} from "../../../../util/Status";
 
 class DockerHelper extends Helper {
     public containerShellStream;
@@ -17,7 +17,7 @@ class DockerHelper extends Helper {
     private readonly dockerController;
 
 
-    constructor(server: Gameserver) {
+    constructor(server: GameServer) {
         super(server);
 
         // TODO: may need to add a config option for specificity this manually

@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as winston from 'winston';
-import {SSManager} from "../ssmanager";
+import {SSManager} from "../SSManager";
 
 export class Logger {
 

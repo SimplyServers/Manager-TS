@@ -1,10 +1,10 @@
-import {ConfigsController} from "./manager/controllers/configs/configManager";
-import {IConfig} from "./util/config";
-import {Logger} from './util/logger';
+import {ConfigsController} from "./manager/controllers/configs/ConfigsController";
+import {IConfig} from "./util/IConfig";
+import {Logger} from './util/Logger';
 
 import * as configData from "../config.json";
-import {APIServer} from "./api/server";
-import {GameserverController} from "./manager/controllers/gameserver/gameserverManager";
+import {APIServer} from "./api/APIServer";
+import {GameserverController} from "./manager/controllers/gameserver/GameServerController";
 import {DockerInstaller} from "./manager/dockerInstaller";
 
 export class SSManager {

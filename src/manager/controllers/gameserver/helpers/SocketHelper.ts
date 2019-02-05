@@ -1,6 +1,6 @@
-import {SSManager} from "../../../../ssmanager";
-import {Gameserver} from "../gameserver";
-import {Helper} from "./helper";
+import {SSManager} from "../../../../SSManager";
+import {GameServer} from "../GameServer";
+import {Helper} from "./Helper";
 
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -11,7 +11,7 @@ class SocketHelper extends Helper {
 
     private websocket: any;
 
-    constructor(server: Gameserver) {
+    constructor(server: GameServer) {
         super(server);
 
         this.websocket = SSManager.APIServer.io.of("/server/" + this.server.id);

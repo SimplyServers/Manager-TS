@@ -1,11 +1,11 @@
 import * as path from "path";
-import {SSManager} from "../../../ssmanager";
-import * as SSUtil from "../../../util/util";
-import {IServer} from "../configs/serverConfig";
-import {Gameserver} from "./gameserver";
+import {SSManager} from "../../../SSManager";
+import * as SSUtil from "../../../util/Util";
+import {IServer} from "../configs/IServer";
+import {GameServer} from "./GameServer";
 
 export class GameserverController {
-    public servers: Gameserver[];
+    public servers: GameServer[];
 
     private readonly dataFolder: string;
 
@@ -18,7 +18,7 @@ export class GameserverController {
     public loadServers = async (): Promise<void> => {
         const serversJSON = await SSUtil.dirToJson(path.join(SSManager.getRoot(), this.dataFolder, "/servers/"));
         serversJSON.map(server => {
-            this.servers.push(new Gameserver(server));
+            this.servers.push(new GameServer(server));
         })
     };
 
@@ -30,14 +30,14 @@ export class GameserverController {
         return niceConfigs;
     };
 
-    public addNewServer = async (jsonData: IServer): Promise<Gameserver> => {
-        const newServer = new Gameserver(jsonData);
+    public addNewServer = async (jsonData: IServer): Promise<GameServer> => {
+        const newServer = new GameServer(jsonData);
         this.servers.push(newServer);
         await newServer.updateConfig();
         return newServer;
     };
 
-    public removeServer = async (targetServer: Gameserver): Promise<boolean> => {
+    public removeServer = async (targetServer: GameServer): Promise<boolean> => {
         let removed = false;
         await Promise.all(this.servers.map(async (server, index) => {
             if (server === targetServer) {

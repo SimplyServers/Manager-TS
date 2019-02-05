@@ -3,16 +3,16 @@ import * as express from 'express'
 import * as https from "https";
 import * as SocketIO from 'socket.io';
 
-import {Gameserver} from "../manager/controllers/gameserver/gameserver";
-import {SSManager} from "../ssmanager";
-import {CertManager} from "./certManager";
-import {GamesController} from "./controllers/games";
-import {ServersController} from "./controllers/gameserver";
-import {NodeController} from "./controllers/node";
-import {PluginsController} from "./controllers/plugins";
-import {AuthMiddleware} from "./middleware/auth";
-import {LoadedMiddleware} from "./middleware/loaded";
-import {ServerMiddleware} from "./middleware/server";
+import {GameServer} from "../manager/controllers/gameserver/GameServer";
+import {SSManager} from "../SSManager";
+import {CertManager} from "./CertManager";
+import {GamesController} from "./controllers/GamesController";
+import {ServersController} from "./controllers/ServersController";
+import {NodeController} from "./controllers/NodeController";
+import {PluginsController} from "./controllers/PluginsController";
+import {AuthMiddleware} from "./middleware/AuthMiddleware";
+import {LoadedMiddleware} from "./middleware/LoadedMiddleware";
+import {ServerMiddleware} from "./middleware/ServerMiddleware";
 
 export class APIServer {
     public express;
@@ -125,19 +125,19 @@ export class APIServer {
     private mountRoutes = (): void => {
         const apiRouter = require('express').Router();
 
-        // games.ts
+        // GamesController.ts
         const gamesController = new GamesController();
         apiRouter.get('/game/', [this.authMiddleware.authRequired], gamesController.getGames);
 
-        // plugins.ts
+        // PluginsController.ts
         const pluginsController = new PluginsController();
         apiRouter.get('/plugin/', [this.authMiddleware.authRequired], pluginsController.getPlugins);
 
-        // node.ts
+        // NodeController.ts
         const nodeController = new NodeController();
         apiRouter.get('/node/', [this.authMiddleware.authRequired], nodeController.getStatus);
 
-        // gameserver.ts
+        // ServersController.ts
         const gameserverController = new ServersController();
         apiRouter.get('/server/', [this.authMiddleware.authRequired], gameserverController.getGameservers);
         apiRouter.get('/server/:server', [this.authMiddleware.authRequired, this.serverMiddleware.getServer], gameserverController.getServer);

@@ -2,7 +2,7 @@ import * as proc from "child_process";
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as util from "util";
-import {SSManager} from "../ssmanager";
+import {SSManager} from "../SSManager";
 
 export class CertManager {
     public ensureCerts = async (): Promise<void> => {

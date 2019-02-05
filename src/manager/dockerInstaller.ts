@@ -3,7 +3,7 @@ import * as Dockerode from "dockerode";
 import * as DockerodeUtils from "dockerode-utils";
 import * as path from "path";
 
-import {SSManager} from "../ssmanager";
+import {SSManager} from "../SSManager";
 
 class DockerInstaller {
 

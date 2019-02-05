@@ -1,11 +1,11 @@
-import {SSManager} from "../../../ssmanager";
-import {ServerActionError} from "../../../util/errors/serverActionError";
-import {Status} from "../../../util/status";
-import {IGame} from "../configs/gameConfig";
-import {IServer} from "../configs/serverConfig";
-import {DockerHelper} from "./helpers/docker";
-import {FilesystemHelper} from "./helpers/fs";
-import {SocketHelper} from "./helpers/socket";
+import {SSManager} from "../../../SSManager";
+import {ServerActionError} from "../../../util/errors/ServerActionError";
+import {Status} from "../../../util/Status";
+import {IGame} from "../configs/IGame";
+import {IServer} from "../configs/IServer";
+import {DockerHelper} from "./helpers/DockerHelper";
+import {FilesystemHelper} from "./helpers/FilesystemHelper";
+import {SocketHelper} from "./helpers/SocketHelper";
 
 import * as async from "async";
 import * as proc from "child_process";
@@ -16,9 +16,9 @@ import * as Pty from "pty.js";
 import * as sha1file from "sha1-file";
 import * as stripAnsi from "strip-ansi";
 import * as util from "util";
-import {GamedigHelper} from "./helpers/gamedig";
+import {GamedigHelper} from "./helpers/GamedigHelper";
 
-export class Gameserver extends EventEmitter {
+export class GameServer extends EventEmitter {
 
     public currentGame: IGame;
     public status: Status;
