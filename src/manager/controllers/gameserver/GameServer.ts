@@ -191,7 +191,7 @@ export class GameServer extends EventEmitter {
             throw new ServerActionError("SERVER_LOCKED");
         }
         if (this.status !== Status.Off) {
-            throw new ServerActionError("SERVER_LOCKED");
+            throw new ServerActionError("SERVER_NOT_OFF");
         }
 
         this.setBlocked(true);
