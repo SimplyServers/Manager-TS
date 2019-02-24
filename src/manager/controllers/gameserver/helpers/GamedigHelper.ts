@@ -1,7 +1,7 @@
 import {GameServer} from "../GameServer";
 import {Helper} from "./Helper";
 
-import * as gamedig from "GamedigHelper";
+import * as gamedig from "gamedig";
 import {SSManager} from "../../../../SSManager";
 import {Status} from "../../../../util/Status";
 

@@ -5,7 +5,7 @@ import {Logger} from './util/Logger';
 import * as configData from "../config.json";
 import {APIServer} from "./api/APIServer";
 import {GameserverController} from "./manager/controllers/gameserver/GameServerController";
-import {DockerInstaller} from "./manager/dockerInstaller";
+import {DockerInstaller} from "./manager/DockerInstaller";
 
 export class SSManager {
     public static config: IConfig;
