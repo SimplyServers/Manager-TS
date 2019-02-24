@@ -7,27 +7,27 @@ import {SSManager} from "../SSManager";
 
 class DockerInstaller {
 
-    private readonly dockerContoller;
+    private readonly dockerController;
 
     constructor() {
         // TODO: may need to add a config option for specificity this manually
-        this.dockerContoller = new Dockerode({
+        this.dockerController = new Dockerode({
             socketPath: "/var/run/docker.sock"
         });
     }
 
     public bootstrap = async (): Promise<void> => {
-        if (!(await DockerodeUtils.imageExists(this.dockerContoller, "ssjava"))) {
+        if (!(await DockerodeUtils.imageExists(this.dockerController, "ssjava"))) {
             await this.addImage(path.join(SSManager.getRoot(), "../dockerfiles/java/"), "ssjava");
         }
     };
 
-    private addImage = async (path: string, name: string): Promise<void> => {
+    private addImage = async (filePath: string, name: string): Promise<void> => {
         SSManager.logger.verbose("Adding Docker image for " + name + "... this may take some time!");
 
         await new Promise((resolve, reject) => {
-            this.dockerContoller.buildImage({
-                context: path,
+            this.dockerController.buildImage({
+                context: filePath,
                 src: ['Dockerfile']
             }, {t: name}, (err, stream) => {
                 if (err) { return reject(err); }
