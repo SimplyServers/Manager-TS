@@ -442,7 +442,11 @@ export class ServersController {
             return next(e);
         }
 
-        await newServer.create();
+        try {
+            await newServer.create();
+        }catch (e) {
+            return next(e);
+        }
 
         res.json({
             server: newServer.getInfo()
