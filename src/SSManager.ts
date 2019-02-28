@@ -2,6 +2,8 @@ import {ConfigsController} from "./manager/controllers/configs/ConfigsController
 import {IConfig} from "./util/IConfig";
 import {Logger} from './util/Logger';
 
+import * as Raven from "raven";
+
 import * as configData from "../config.json";
 import {APIServer} from "./api/APIServer";
 import {GameserverController} from "./manager/controllers/gameserver/GameServerController";
@@ -21,6 +23,7 @@ export class SSManager {
     }
 
     constructor() {
+        Raven.config('https://b4adee6cef3444b1922282a9b4b57264@sentry.simplyservers.io/5').install();
         SSManager.logger = new Logger(false);
         SSManager.config = configData;
         SSManager.loaded = false;

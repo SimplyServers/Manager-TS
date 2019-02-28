@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as Raven from 'raven';
 import * as winston from 'winston';
 import {SSManager} from "../SSManager";
 
@@ -53,6 +54,7 @@ export class Logger {
     };
 
     public error = (message: string): void => {
+        Raven.captureException(new Error(message));
         this.logger.error("[Verbose] " + message)
     };
 
