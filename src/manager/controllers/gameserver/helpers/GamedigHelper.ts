@@ -10,6 +10,12 @@ class GamedigHelper extends Helper {
   public pingerInterval;
   public failedPings: number;
   public enabled: boolean;
+
+  constructor(server: GameServer) {
+    super(server);
+    this.failedPings = 0;
+    this.enabled = false;
+  }
   public start = () => {
     this.enabled = true;
     this.pingerInterval = setInterval(this.pinger, SSManager.config.servers.pingTime);
@@ -50,12 +56,6 @@ class GamedigHelper extends Helper {
       }
     });
   };
-
-  constructor(server: GameServer) {
-    super(server);
-    this.failedPings = 0;
-    this.enabled = false;
-  }
 
 }
 

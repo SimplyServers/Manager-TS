@@ -13,6 +13,19 @@ class DockerHelper extends Helper {
   public processStdinStream;
   public containerLoggerStream;
   public container;
+  private readonly dockerController;
+
+  constructor(server: GameServer) {
+    super(server);
+
+    // TODO: may need to add a config option for specificity this manually
+    this.dockerController = new Dockerode({
+      socketPath: "/var/run/docker.sock"
+    });
+
+    this.container = this.dockerController.getContainer(this.server.id);
+  }
+
   /*
   Control
    */
@@ -168,7 +181,6 @@ class DockerHelper extends Helper {
     // TODO: cant find any docs on alternatives or why this is deprecated.
     await this.container.stop();
   };
-  private readonly dockerController;
   private ensureStopped = async (): Promise<boolean> => {
     const data = await this.container.inspect();
     if (data.State.Status === "running") {
@@ -258,17 +270,6 @@ class DockerHelper extends Helper {
       });
     }
   };
-
-  constructor(server: GameServer) {
-    super(server);
-
-    // TODO: may need to add a config option for specificity this manually
-    this.dockerController = new Dockerode({
-      socketPath: "/var/run/docker.sock"
-    });
-
-    this.container = this.dockerController.getContainer(this.server.id);
-  }
 }
 
 export { DockerHelper };

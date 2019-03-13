@@ -10,6 +10,13 @@ import * as userid from "userid";
 class SocketHelper extends Helper {
 
   private websocket: any;
+
+  constructor(server: GameServer) {
+    super(server);
+
+    this.websocket = SSManager.APIServer.io.of("/server/" + this.server.id);
+    this.bootstrapSocket();
+  }
   private bootstrapSocket = () => {
     // Auth middleware
     this.setupAuth();
@@ -148,13 +155,6 @@ class SocketHelper extends Helper {
       return next(); // Everything is good, continue.
     });
   };
-
-  constructor(server: GameServer) {
-    super(server);
-
-    this.websocket = SSManager.APIServer.io.of("/server/" + this.server.id);
-    this.bootstrapSocket();
-  }
 
 
 }

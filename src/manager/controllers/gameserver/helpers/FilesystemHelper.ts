@@ -9,6 +9,10 @@ import { FileError } from "../../../../util/errors/FileError";
 import { ServerActionError } from "../../../../util/errors/ServerActionError";
 
 class FilesystemHelper extends Helper {
+
+  constructor(server: GameServer) {
+    super(server);
+  }
   /*
   File functions
    */
@@ -160,10 +164,6 @@ class FilesystemHelper extends Helper {
     }
     return fullPath;
   };
-
-  constructor(server: GameServer) {
-    super(server);
-  }
 }
 
 export { FilesystemHelper };
