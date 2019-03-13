@@ -1,11 +1,11 @@
-import {Gameserver} from "../gameserver";
+import { GameServer } from "../GameServer";
 
 class Helper {
-    protected readonly server: Gameserver;
+  protected readonly server: GameServer;
 
-    constructor(server: Gameserver) {
-        this.server = server;
-    }
+  constructor(server: GameServer) {
+    this.server = server;
+  }
 }
 
-export {Helper}
+export { Helper };
