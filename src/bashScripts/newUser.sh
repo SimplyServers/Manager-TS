@@ -2,7 +2,7 @@
 # Server Bucket newUser.sh
 # Creates a user with the specified prams (./newUser.sh <name> <password>)
 
-useradd -m -d /home/$1 -s /bin/false -p $(openssl passwd -1 $2) $1
+adduser --disabled-password --disable-login --home /home/$1 --password $2 $1
 
 usermod -G sftponly $1
 
