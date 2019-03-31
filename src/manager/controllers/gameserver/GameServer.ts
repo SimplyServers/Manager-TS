@@ -11,12 +11,12 @@ import * as async from "async";
 import * as proc from "child_process";
 import { EventEmitter } from "events";
 import * as fs from "fs-extra";
+import * as Pty from "node-pty";
 import * as path from "path";
-import * as Pty from "pty.js";
 import * as sha1file from "sha1-file";
 import * as stripAnsi from "strip-ansi";
 import * as util from "util";
-import { GamedigHelper } from "./helpers/GamedigHelper";
+import { GamedigHelper } from  "./helpers/GamedigHelper";
 
 export class GameServer extends EventEmitter {
 
@@ -409,6 +409,9 @@ export class GameServer extends EventEmitter {
           "-c",
           "cd " + this.fsHelper.getRoot() + " && " + cmd.command
         ];
+        // Typings are incorrect.
+        // Look at https://github.com/Microsoft/node-pty/blob/master/src/index.ts and https://github.com/Microsoft/node-pty/blob/master/typings/node-pty.d.ts
+        // @ts-ignore
         const installerProcess = Pty.spawn(shell, params);
         installerProcess.on("exit", () => {
           next();
