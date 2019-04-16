@@ -5,10 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node ./src/server.ts",
-    "start": "nodemon ./dist/server.js",
-    "lint": "tslint -c tslint.json -e './node_modules/' --project './' --fix",
-    "prod": "npm run build && npm run start"
+    "run:debug": "NODE_ENV=dev DEBUG=* node --inspect -r ts-node/register main.ts"
   },
   "author": "",
   "license": "ISC",
